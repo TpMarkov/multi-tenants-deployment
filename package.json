@@ -1,0 +1,12 @@
+{
+  "name": "multi-tenant-hospitality",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "echo 'No root build needed'",
+    "start": "cd server && npm start"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
