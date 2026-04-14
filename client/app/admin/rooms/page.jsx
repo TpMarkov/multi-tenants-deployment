@@ -11,6 +11,8 @@ import {
   Download,
   QrCode,
   Trash2,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import QRCode from "qrcode";
@@ -120,6 +122,8 @@ export default function RoomsPage() {
   const [qrRoom, setQrRoom] = useState(null);
   const [roomNumber, setRoomNumber] = useState("");
   const [saving, setSaving] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     const fetch = async () => {
@@ -166,6 +170,11 @@ export default function RoomsPage() {
       toast.error("Failed to delete room");
     }
   };
+
+  const totalPages = Math.ceil(rooms.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedRooms = rooms.slice(startIndex, endIndex);
 
   return (
     <>
@@ -219,7 +228,7 @@ export default function RoomsPage() {
           </button>
         </div>
 
-        <div className="bg-white rounded-md shadow-sm overflow-hidden">
+        <div className="bg-white rounded-md shadow-sm overflow-hidden flex flex-col flex-1 min-h-0">
           {loading ? (
             <div className="flex items-center justify-center h-48 md:h-64">
               <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
@@ -253,7 +262,7 @@ export default function RoomsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#f3f3f3]">
-                  {rooms.map((room) => (
+                  {paginatedRooms.map((room) => (
                     <tr
                       key={room._id}
                       className="hover:bg-[#f2f4f8] transition-colors"
@@ -310,6 +319,81 @@ export default function RoomsPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {totalPages > 1 ? (
+              <div className="border-t border-[#f3f3f3] px-3 md:px-6 py-3 md:py-4 bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="flex items-center gap-2 order-2 sm:order-1">
+                  <span className="text-xs font-medium text-[#67757c]">Items per page:</span>
+                  <select
+                    value={itemsPerPage}
+                    onChange={(e) => {
+                      setItemsPerPage(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="px-2 md:px-3 py-1 md:py-1.5 border border-slate-200 rounded text-xs md:text-sm font-medium text-slate-700 hover:border-slate-300 transition-colors"
+                  >
+                    {[5, 10, 15, 20].map((n) => (
+                      <option key={n} value={n}>
+                        {n}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="text-xs font-medium text-[#67757c] order-1 sm:order-2">
+                  {startIndex + 1}-{Math.min(endIndex, rooms.length)} of {rooms.length}
+                </div>
+
+                <div className="flex items-center gap-1 order-3">
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="p-1 md:p-1.5 rounded border border-slate-200 text-slate-600 hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronLeft className="h-3 w-3 md:h-4 md:w-4" />
+                  </button>
+
+                  <div className="flex items-center gap-1 px-1 md:px-2">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={`px-2 md:px-2.5 py-0.5 md:py-1 rounded text-xs font-medium transition-all ${
+                            currentPage === pageNum
+                              ? "bg-[#1e88e5] text-white"
+                              : "text-slate-600 hover:bg-white border border-slate-200"
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <button
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
+                    disabled={currentPage === totalPages || totalPages === 0}
+                    className="p-1 md:p-1.5 rounded border border-slate-200 text-slate-600 hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+<ChevronRight className="h-3 w-3 md:h-4 md:w-4" />
+                  </button>
+                </div>
+              </div>
+            ) : null}
             </div>
           )}
         </div>
