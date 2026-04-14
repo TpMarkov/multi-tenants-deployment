@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { validateQRSession } from "@/lib/api";
 import { Loader2, AlertCircle } from "lucide-react";
 
-export default function AccessPage({ params }) {
-  const { token } = params;
+export default function AccessPage() {
+  const params = useParams();
+  const token = params?.token;
   const router = useRouter();
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -48,7 +49,7 @@ export default function AccessPage({ params }) {
     };
 
     validateAndRedirect();
-  }, [token, router]);
+  }, [router]);
 
   if (loading) {
     return (
