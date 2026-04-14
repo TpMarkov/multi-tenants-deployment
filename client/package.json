@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
-    "@tailwindcss/postcss": "^4",
     "axios": "^1.15.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.38.0",
