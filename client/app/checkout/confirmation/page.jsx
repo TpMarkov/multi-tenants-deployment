@@ -4,11 +4,29 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { CheckCircle2, Home } from "lucide-react";
 import { Suspense } from "react";
 
+function getCookie(name) {
+  if (typeof document === "undefined") return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(";").shift();
+  return null;
+}
+
 function ConfirmationContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
   const roomNumber = searchParams.get("roomNumber");
+
+  const handleReturn = () => {
+    const propertyId = getCookie("propertyId");
+    const roomId = getCookie("roomId");
+    if (propertyId && roomId) {
+      router.push(`/property/${propertyId}/room/${roomId}`);
+    } else {
+      router.push("/");
+    }
+  };
 
   return (
     <div className="flex flex-col h-screen items-center justify-center p-6 text-center bg-gradient-to-b from-green-50 to-white">
@@ -41,11 +59,11 @@ function ConfirmationContent() {
 
       <div className="space-y-3 w-full max-w-sm">
         <button
-          onClick={() => router.push("/")}
+          onClick={handleReturn}
           className="w-full bg-black text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg hover:bg-slate-900 transition-all"
         >
           <Home className="h-5 w-5" />
-          Back to Home
+          Back to Menu
         </button>
       </div>
 

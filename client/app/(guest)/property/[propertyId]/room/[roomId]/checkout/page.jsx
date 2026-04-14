@@ -99,7 +99,7 @@ export default function CheckoutPage() {
         clearCart();
         console.log("🎉 Order placed successfully:", res.data.data._id);
         router.push(
-          `/checkout/confirmation?orderId=${res.data.data._id}&roomNumber=${roomData.roomNumber}`,
+          `/property/${roomData.propertyId}/room/${roomData.roomId}/confirmation?orderId=${res.data.data._id}`,
         );
       } else {
         console.error("❌ Order failed:", res.data);
