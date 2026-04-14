@@ -160,7 +160,7 @@ export const createRoom = asyncHandler(async (req, res, next) => {
   );
 
   // Generate QR code with only session token (no propertyId, no roomNumber exposed)
-  const url = `/checkout/${sessionToken}`;
+  const url = `/access/${sessionToken}`;
   const qrCodeUrl = await qrcode.toDataURL(url);
   room.qrCodeUrl = qrCodeUrl;
   await room.save();
@@ -319,7 +319,7 @@ export const regenerateAccessToken = asyncHandler(async (req, res, next) => {
   );
 
   // Regenerate QR code with only session token (no sensible data exposed in URL)
-  const url = `/checkout/${sessionToken}`;
+  const url = `/access/${sessionToken}`;
   const qrCodeUrl = await qrcode.toDataURL(url);
   room.qrCodeUrl = qrCodeUrl;
   await room.save();

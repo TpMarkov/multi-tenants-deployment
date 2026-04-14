@@ -1,26 +1,50 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
-import { useStore } from '@/store/useStore';
-import { getCategories, getMenuItems } from '@/lib/api';
-import MenuList from '@/components/menu/MenuList';
-import CategoryNav from '@/components/menu/CategoryNav';
-import CartSticky from '@/components/cart/CartSticky';
-import { Loader2 } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useStore } from "@/store/useStore";
+import { getCategories, getMenuItems } from "@/lib/api";
+import MenuList from "@/components/menu/MenuList";
+import CategoryNav from "@/components/menu/CategoryNav";
+import CartSticky from "@/components/cart/CartSticky";
+import { Loader2 } from "lucide-react";
+
+function getCookie(name) {
+  if (typeof document === "undefined") return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(";").shift();
+  return null;
+}
 
 export default function MenuPage() {
-  const { propertyId, roomId } = useParams();
+  const { propertyId: paramPropertyId, roomId: paramRoomId } = useParams();
+  const router = useRouter();
   const setSession = useStore((state) => state.setSession);
+  const [propertyId, setPropertyId] = useState(paramPropertyId);
+  const [roomId, setRoomId] = useState(paramRoomId);
   const [categories, setCategories] = useState([]);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    const storedPropertyId = getCookie("propertyId");
+    const storedRoomId = getCookie("roomId");
+
+    if (storedPropertyId && storedRoomId) {
+      setPropertyId(storedPropertyId);
+      setRoomId(storedRoomId);
+    }
+  }, []);
+
+  useEffect(() => {
     if (propertyId && roomId) {
       setSession(propertyId, roomId);
       fetchData();
+    } else if (!paramPropertyId && !paramRoomId) {
+      setError("Please scan a valid QR code to view the menu.");
+      setLoading(false);
     }
   }, [propertyId, roomId]);
 

@@ -2,7 +2,7 @@
 
 import { useStore } from "@/store/useStore";
 import { formatPrice } from "@/lib/utils";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Minus,
@@ -11,16 +11,20 @@ import {
   Send,
   ShoppingBag,
   Loader2,
-  AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { createOrder, validateQRSession } from "@/lib/api";
+import { createOrder } from "@/lib/api";
+
+function getCookie(name) {
+  if (typeof document === "undefined") return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(";").shift();
+  return null;
+}
 
 export default function CheckoutPage() {
-  const searchParams = useSearchParams();
-  const sessionToken = searchParams.get("token");
-
   const cart = useStore((state) => state.cart);
   const updateQuantity = useStore((state) => state.updateQuantity);
   const removeFromCart = useStore((state) => state.removeFromCart);
@@ -30,51 +34,24 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [roomData, setRoomData] = useState(null);
   const [loadingRoom, setLoadingRoom] = useState(true);
-  const [tokenError, setTokenError] = useState(false);
   const router = useRouter();
 
-  // Validate QR session token on page load
   useEffect(() => {
-    const validateSession = async () => {
-      try {
-        if (!sessionToken) {
-          console.error(
-            "🔐 [Checkout] No session token provided - invalid QR code",
-          );
-          setTokenError(true);
-          setLoadingRoom(false);
-          return;
-        }
+    const propertyId = getCookie("propertyId");
+    const roomId = getCookie("roomId");
+    const roomNumber = getCookie("roomNumber");
 
-        console.log(
-          "🔍 [Checkout] Validating QR session token:",
-          sessionToken?.substring(0, 10) + "...",
-        );
-        const res = await validateQRSession(sessionToken);
-        console.log(
-          "✅ [Checkout] Session validated, room data:",
-          res.data.data,
-        );
-        setRoomData(res.data.data);
-        setTokenError(false);
-      } catch (err) {
-        console.error("❌ [Checkout] Failed to validate QR session:", err);
-        if (
-          err.response?.status === 401 ||
-          err.response?.status === 403 ||
-          err.response?.status === 404
-        ) {
-          setTokenError(true);
-        }
-      } finally {
-        setLoadingRoom(false);
-      }
-    };
-
-    if (sessionToken) {
-      validateSession();
+    if (propertyId && roomId && roomNumber) {
+      setRoomData({
+        propertyId,
+        roomId,
+        roomNumber,
+      });
+    } else {
+      console.error("No session data found in cookies");
     }
-  }, [sessionToken]);
+    setLoadingRoom(false);
+  }, []);
 
   const totalPrice = cart.reduce(
     (acc, item) => acc + item.price * item.quantity,
@@ -153,7 +130,11 @@ export default function CheckoutPage() {
           Add some delicious items from our menu to get started.
         </p>
         <Link
-          href={sessionToken ? `/?token=${sessionToken}` : "/"}
+          href={
+            roomData?.propertyId && roomData?.roomId
+              ? `/property/${roomData.propertyId}/room/${roomData.roomId}`
+              : "/"
+          }
           className="bg-black text-white px-8 py-3 rounded-full font-bold shadow-lg"
         >
           View Menu
@@ -165,26 +146,19 @@ export default function CheckoutPage() {
   return (
     <div className="min-h-screen bg-white pb-32">
       <header className="sticky top-0 bg-white z-10 p-4 border-b flex items-center gap-4">
-        <Link href={sessionToken ? `/?token=${sessionToken}` : "/"}>
+        <Link
+          href={
+            roomData?.propertyId && roomData?.roomId
+              ? `/property/${roomData.propertyId}/room/${roomData.roomId}`
+              : "/"
+          }
+        >
           <div className="p-2 -ml-2 rounded-full hover:bg-slate-100">
             <ArrowLeft className="h-6 w-6" />
           </div>
         </Link>
         <h1 className="text-xl font-bold">Your Cart</h1>
       </header>
-
-      {tokenError && (
-        <div className="bg-red-50 border border-red-200 p-4 m-4 rounded-lg flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
-          <div>
-            <h3 className="font-bold text-red-900">Invalid QR Code</h3>
-            <p className="text-sm text-red-700">
-              This QR code is invalid or has expired. Please ask a staff member
-              for a new one.
-            </p>
-          </div>
-        </div>
-      )}
 
       <div className="p-4 space-y-6">
         {/* Items List */}
@@ -270,25 +244,13 @@ export default function CheckoutPage() {
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t z-10">
         <button
           onClick={handlePlaceOrder}
-          disabled={loading || loadingRoom || !roomData || tokenError}
+          disabled={loading || loadingRoom || !roomData}
           className="w-full bg-black text-white h-16 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 shadow-xl active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          title={
-            tokenError
-              ? "Invalid QR code"
-              : loadingRoom
-                ? "Loading room information..."
-                : ""
-          }
         >
           {loading || loadingRoom ? (
             <>
               <Loader2 className="h-6 w-6 animate-spin text-white" />
               {loadingRoom ? "Loading..." : "Placing Order..."}
-            </>
-          ) : tokenError ? (
-            <>
-              <AlertCircle className="h-6 w-6" />
-              Invalid QR Code
             </>
           ) : (
             <>
