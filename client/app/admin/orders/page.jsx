@@ -354,10 +354,14 @@ export default function OrdersPage() {
                   <thead className="sticky top-0 z-10">
                     <tr className="bg-slate-50 text-left text-[#455a64] text-xs uppercase font-semibold">
                       <th className="px-3 md:px-6 py-3">Room</th>
-                      <th className="px-3 md:px-6 py-3 hidden sm:table-cell">Items</th>
+                      <th className="px-3 md:px-6 py-3 hidden sm:table-cell">
+                        Items
+                      </th>
                       <th className="px-3 md:px-6 py-3">Total</th>
                       <th className="px-3 md:px-6 py-3">Status</th>
-                      <th className="px-3 md:px-6 py-3 hidden md:table-cell">Time</th>
+                      <th className="px-3 md:px-6 py-3 hidden md:table-cell">
+                        Time
+                      </th>
                       <th className="px-3 md:px-6 py-3">Actions</th>
                     </tr>
                   </thead>
@@ -435,7 +439,8 @@ export default function OrdersPage() {
                 </div>
 
                 <div className="text-xs font-medium text-[#67757c] order-1 sm:order-2">
-                  {sorted.length === 0 ? 0 : startIndex + 1}-{Math.min(endIndex, sorted.length)} of {sorted.length}
+                  {sorted.length === 0 ? 0 : startIndex + 1}-
+                  {Math.min(endIndex, sorted.length)} of {sorted.length}
                 </div>
 
                 <div className="flex items-center gap-1 order-3">
