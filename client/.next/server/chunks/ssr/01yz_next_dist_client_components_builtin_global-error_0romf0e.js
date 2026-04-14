@@ -1,0 +1,3 @@
+module.exports=[48241,(a,b,c)=>{let{createClientModuleProxy:d}=a.r(866);a.n(d("[project]/OneDrive/Desktop/Projects-for-portfolio-versions/room-service/multi-tenant-hospitality/client/node_modules/next/dist/client/components/builtin/global-error.js <module evaluation>"))},1922,(a,b,c)=>{let{createClientModuleProxy:d}=a.r(866);a.n(d("[project]/OneDrive/Desktop/Projects-for-portfolio-versions/room-service/multi-tenant-hospitality/client/node_modules/next/dist/client/components/builtin/global-error.js"))},17497,a=>{"use strict";a.i(48241);var b=a.i(1922);a.n(b)},67772,a=>{a.n(a.i(17497))}];
+
+//# sourceMappingURL=01yz_next_dist_client_components_builtin_global-error_0romf0e.js.map

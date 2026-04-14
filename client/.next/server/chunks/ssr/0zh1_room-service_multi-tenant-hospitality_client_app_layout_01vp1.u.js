@@ -1,0 +1,3 @@
+module.exports=[79554,a=>{"use strict";var b=a.i(39986);a.s(["default",0,function({children:a}){return(0,b.jsx)("html",{lang:"en",children:(0,b.jsx)("body",{className:"antialiased",children:(0,b.jsx)("main",{className:"min-h-screen bg-slate-50",children:a})})})},"metadata",0,{title:"Hotel Dining",description:"Order your room dining with a simple scan",manifest:"/manifest.json"}])},68953,a=>{a.n(a.i(79554))}];
+
+//# sourceMappingURL=0zh1_room-service_multi-tenant-hospitality_client_app_layout_01vp1.u.js.map

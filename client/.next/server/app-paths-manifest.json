@@ -1,0 +1,18 @@
+{
+  "/(guest)/property/[propertyId]/room/[roomId]/checkout/page": "app/(guest)/property/[propertyId]/room/[roomId]/checkout/page.js",
+  "/(guest)/property/[propertyId]/room/[roomId]/confirmation/page": "app/(guest)/property/[propertyId]/room/[roomId]/confirmation/page.js",
+  "/(guest)/property/[propertyId]/room/[roomId]/page": "app/(guest)/property/[propertyId]/room/[roomId]/page.js",
+  "/_global-error/page": "app/_global-error/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/admin/dashboard/page": "app/admin/dashboard/page.js",
+  "/admin/login/page": "app/admin/login/page.js",
+  "/admin/menu/page": "app/admin/menu/page.js",
+  "/admin/orders/page": "app/admin/orders/page.js",
+  "/admin/page": "app/admin/page.js",
+  "/admin/rooms/page": "app/admin/rooms/page.js",
+  "/admin/settings/page": "app/admin/settings/page.js",
+  "/checkout/[token]/page": "app/checkout/[token]/page.js",
+  "/checkout/confirmation/page": "app/checkout/confirmation/page.js",
+  "/checkout/page": "app/checkout/page.js",
+  "/page": "app/page.js"
+}

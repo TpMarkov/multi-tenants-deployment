@@ -1,0 +1,159 @@
+{
+  "version": 3,
+  "pages404": true,
+  "appType": "app",
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "priority": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    },
+    {
+      "source": "/",
+      "destination": "/admin/login",
+      "statusCode": 307,
+      "regex": "^(?!/_next)/(?:/)?$"
+    }
+  ],
+  "headers": [],
+  "onMatchHeaders": [],
+  "rewrites": {
+    "beforeFiles": [],
+    "afterFiles": [],
+    "fallback": []
+  },
+  "dynamicRoutes": [
+    {
+      "page": "/checkout/[token]",
+      "regex": "^/checkout/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPtoken": "nxtPtoken"
+      },
+      "namedRegex": "^/checkout/(?<nxtPtoken>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/property/[propertyId]/room/[roomId]",
+      "regex": "^/property/([^/]+?)/room/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPpropertyId": "nxtPpropertyId",
+        "nxtProomId": "nxtProomId"
+      },
+      "namedRegex": "^/property/(?<nxtPpropertyId>[^/]+?)/room/(?<nxtProomId>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/property/[propertyId]/room/[roomId]/checkout",
+      "regex": "^/property/([^/]+?)/room/([^/]+?)/checkout(?:/)?$",
+      "routeKeys": {
+        "nxtPpropertyId": "nxtPpropertyId",
+        "nxtProomId": "nxtProomId"
+      },
+      "namedRegex": "^/property/(?<nxtPpropertyId>[^/]+?)/room/(?<nxtProomId>[^/]+?)/checkout(?:/)?$"
+    },
+    {
+      "page": "/property/[propertyId]/room/[roomId]/confirmation",
+      "regex": "^/property/([^/]+?)/room/([^/]+?)/confirmation(?:/)?$",
+      "routeKeys": {
+        "nxtPpropertyId": "nxtPpropertyId",
+        "nxtProomId": "nxtProomId"
+      },
+      "namedRegex": "^/property/(?<nxtPpropertyId>[^/]+?)/room/(?<nxtProomId>[^/]+?)/confirmation(?:/)?$"
+    }
+  ],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/_global-error",
+      "regex": "^/_global\\-error(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_global\\-error(?:/)?$"
+    },
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/admin",
+      "regex": "^/admin(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin(?:/)?$"
+    },
+    {
+      "page": "/admin/dashboard",
+      "regex": "^/admin/dashboard(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/dashboard(?:/)?$"
+    },
+    {
+      "page": "/admin/login",
+      "regex": "^/admin/login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/login(?:/)?$"
+    },
+    {
+      "page": "/admin/menu",
+      "regex": "^/admin/menu(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/menu(?:/)?$"
+    },
+    {
+      "page": "/admin/orders",
+      "regex": "^/admin/orders(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/orders(?:/)?$"
+    },
+    {
+      "page": "/admin/rooms",
+      "regex": "^/admin/rooms(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/rooms(?:/)?$"
+    },
+    {
+      "page": "/admin/settings",
+      "regex": "^/admin/settings(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/settings(?:/)?$"
+    },
+    {
+      "page": "/checkout",
+      "regex": "^/checkout(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/checkout(?:/)?$"
+    },
+    {
+      "page": "/checkout/confirmation",
+      "regex": "^/checkout/confirmation(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/checkout/confirmation(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "rsc",
+    "varyHeader": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+    "prefetchHeader": "next-router-prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSegmentHeader": "next-router-segment-prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments",
+    "clientParamParsing": false,
+    "dynamicRSCPrerender": false
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  }
+}
