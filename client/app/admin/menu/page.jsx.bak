@@ -574,7 +574,7 @@ export default function MenuPage() {
                       </tr>
                     ))}
                   </tbody>
-</table>
+                </table>
               )}
 
               {activeTab === "items" && totalPages > 1 && (
@@ -648,7 +648,8 @@ export default function MenuPage() {
                         <ChevronRight className="h-3 w-3 md:h-4 md:w-4" />
                       </button>
                     </div>
-</div>
+                  </div>
+                </div>
               )}
             </div>
           )}
