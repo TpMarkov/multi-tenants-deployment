@@ -10,7 +10,7 @@ function Toggle({ checked, onChange }) {
   return (
     <button
       onClick={onChange}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${checked ? 'bg-blue-600' : 'bg-slate-200'}`}
+      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${checked ? 'bg-[#26c6da]' : 'bg-slate-200'}`}
     >
       <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
     </button>
@@ -20,10 +20,10 @@ function Toggle({ checked, onChange }) {
 function Modal({ title, onClose, children, large = false }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className={`bg-white rounded-3xl p-6 ${large ? 'max-w-2xl' : 'max-w-md'} w-full shadow-2xl`} onClick={e => e.stopPropagation()}>
+      <div className={`bg-white rounded-md p-6 ${large ? 'max-w-2xl' : 'max-w-md'} w-full shadow-xl`} onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-5">
-          <h3 className="text-lg font-black text-slate-900">{title}</h3>
-          <button onClick={onClose} className="p-1.5 hover:bg-slate-100 rounded-xl transition-colors">
+          <h3 className="text-lg font-semibold text-[#455a64]">{title}</h3>
+          <button onClick={onClose} className="p-1.5 hover:bg-slate-100 rounded transition-colors">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -180,13 +180,13 @@ export default function MenuPage() {
         <Modal title="New Category" onClose={() => setShowCatModal(false)}>
           <form onSubmit={handleCreateCategory} className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Category Name</label>
+              <label className="block text-sm font-semibold text-[#67757c] mb-2">Category Name</label>
               <input value={catName} onChange={e => setCatName(e.target.value)} required
                 placeholder="e.g. Breakfast, Cocktails"
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                className="w-full px-4 py-3 border border-slate-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#1e88e5]" />
             </div>
             <button type="submit" disabled={catSaving}
-              className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all disabled:opacity-60">
+              className="w-full bg-[#1e88e5] text-white py-3 rounded font-semibold flex items-center justify-center gap-2 hover:bg-[#1976d2] transition-all disabled:opacity-60">
               {catSaving && <Loader2 className="h-4 w-4 animate-spin" />} Create Category
             </button>
           </form>
@@ -199,28 +199,28 @@ export default function MenuPage() {
         }} large>
           <form onSubmit={handleSaveItem} className="space-y-4 max-h-96 overflow-y-auto">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Item Name *</label>
+              <label className="block text-sm font-semibold text-[#67757c] mb-2">Item Name *</label>
               <input 
                 type="text"
                 value={itemForm.name} 
                 onChange={e => setItemForm(f => ({ ...f, name: e.target.value }))}
                 required 
                 placeholder="e.g. Avocado Toast"
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                className="w-full px-4 py-3 border border-slate-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#1e88e5]" />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Description</label>
+              <label className="block text-sm font-semibold text-[#67757c] mb-2">Description</label>
               <textarea 
                 value={itemForm.description} 
                 onChange={e => setItemForm(f => ({ ...f, description: e.target.value }))}
                 placeholder="Short description"
                 rows={2}
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                className="w-full px-4 py-3 border border-slate-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#1e88e5]" />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Price ($) *</label>
+              <label className="block text-sm font-semibold text-[#67757c] mb-2">Price ($) *</label>
               <input 
                 type="number"
                 step="0.01"
@@ -228,32 +228,32 @@ export default function MenuPage() {
                 onChange={e => setItemForm(f => ({ ...f, price: e.target.value }))}
                 required 
                 placeholder="0.00"
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                className="w-full px-4 py-3 border border-slate-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#1e88e5]" />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Category *</label>
+              <label className="block text-sm font-semibold text-[#67757c] mb-2">Category *</label>
               <select 
                 value={itemForm.categoryId} 
                 onChange={e => setItemForm(f => ({ ...f, categoryId: e.target.value }))} 
                 required
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                className="w-full px-4 py-3 border border-slate-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#1e88e5]">
                 <option value="">Select a category</option>
                 {categories.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Image</label>
+              <label className="block text-sm font-semibold text-[#67757c] mb-2">Image</label>
               <input 
                 type="file"
                 accept="image/*"
                 onChange={handleImageUpload}
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 border border-slate-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#1e88e5]"
               />
               {imagePreview && (
                 <div className="mt-3 flex items-center gap-3">
-                  <img src={imagePreview} alt="Preview" className="h-20 w-20 object-cover rounded-lg" />
+                  <img src={imagePreview} alt="Preview" className="h-20 w-20 object-cover rounded" />
                   <button
                     type="button"
                     onClick={() => {
@@ -269,7 +269,7 @@ export default function MenuPage() {
             </div>
 
             <button type="submit" disabled={itemSaving}
-              className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all disabled:opacity-60">
+              className="w-full bg-[#1e88e5] text-white py-3 rounded font-semibold flex items-center justify-center gap-2 hover:bg-[#1976d2] transition-all disabled:opacity-60">
               {itemSaving && <Loader2 className="h-4 w-4 animate-spin" />} 
               {editingItem ? 'Update Item' : 'Create Item'}
             </button>
@@ -280,22 +280,22 @@ export default function MenuPage() {
       <div className="flex-1 p-6">
         {/* Tabs + Actions */}
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-          <div className="flex gap-1 bg-white border border-slate-200 rounded-2xl p-1.5">
+          <div className="flex gap-1 bg-white border border-slate-200 rounded p-1">
             {['items', 'categories'].map(tab => (
               <button key={tab} onClick={() => setActiveTab(tab)}
-                className={`px-5 py-2 rounded-xl text-sm font-semibold capitalize transition-all ${activeTab === tab ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-800'}`}>
+                className={`px-5 py-2 rounded text-sm font-medium capitalize transition-all ${activeTab === tab ? 'bg-[#1e88e5] text-white' : 'text-[#67757c] hover:text-[#455a64]'}`}>
                 {tab}
               </button>
             ))}
           </div>
           <button onClick={() => activeTab === 'categories' ? setShowCatModal(true) : openItemModal()}
-            className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-sm">
+            className="flex items-center gap-2 px-4 py-2.5 bg-[#26c6da] text-white rounded text-sm font-medium hover:bg-[#1ea6b8] transition-all">
             <Plus className="h-4 w-4" />
             Add {activeTab === 'categories' ? 'Category' : 'Item'}
           </button>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <div className="bg-white rounded-md shadow-sm overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin text-blue-500" /></div>
           ) : activeTab === 'categories' ? (
@@ -307,20 +307,20 @@ export default function MenuPage() {
                 </div>
               ) : (
                 <table className="w-full text-sm">
-                  <thead><tr className="bg-slate-50 text-left text-slate-400 text-xs uppercase tracking-wider">
-                    <th className="px-6 py-3.5 font-semibold">Name</th>
-                    <th className="px-6 py-3.5 font-semibold">Items</th>
-                    <th className="px-6 py-3.5 font-semibold">Actions</th>
+                  <thead><tr className="bg-slate-50 text-left text-[#455a64] text-xs uppercase font-semibold">
+                    <th className="px-6 py-3.5">Name</th>
+                    <th className="px-6 py-3.5">Items</th>
+                    <th className="px-6 py-3.5">Actions</th>
                   </tr></thead>
-                  <tbody className="divide-y divide-slate-50">
+                  <tbody className="divide-y divide-[#f3f3f3]">
                     {categories.map(cat => (
-                      <tr key={cat._id} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-6 py-4 font-bold text-slate-900">{cat.name}</td>
-                        <td className="px-6 py-4 text-slate-500">{items.filter(i => (i.categoryId?._id || i.categoryId) === cat._id).length} items</td>
+                      <tr key={cat._id} className="hover:bg-[#f2f4f8] transition-colors">
+                        <td className="px-6 py-4 font-semibold text-[#455a64]">{cat.name}</td>
+                        <td className="px-6 py-4 text-[#67757c]">{items.filter(i => (i.categoryId?._id || i.categoryId) === cat._id).length} items</td>
                         <td className="px-6 py-4">
                           <button
                             onClick={() => handleDeleteCategory(cat._id, cat.name)}
-                            className="text-red-600 hover:text-red-700 font-semibold text-sm flex items-center gap-1"
+                            className="text-red-600 hover:text-red-700 font-medium text-sm flex items-center gap-1"
                           >
                             <Trash2 className="h-4 w-4" /> Delete
                           </button>
@@ -340,44 +340,44 @@ export default function MenuPage() {
                 </div>
               ) : (
                 <table className="w-full text-sm">
-                  <thead><tr className="bg-slate-50 text-left text-slate-400 text-xs uppercase tracking-wider">
-                    <th className="px-6 py-3.5 font-semibold">Image</th>
-                    <th className="px-6 py-3.5 font-semibold">Name</th>
-                    <th className="px-6 py-3.5 font-semibold">Category</th>
-                    <th className="px-6 py-3.5 font-semibold">Price</th>
-                    <th className="px-6 py-3.5 font-semibold">Available</th>
-                    <th className="px-6 py-3.5 font-semibold">Actions</th>
+                  <thead><tr className="bg-slate-50 text-left text-[#455a64] text-xs uppercase font-semibold">
+                    <th className="px-6 py-3.5">Image</th>
+                    <th className="px-6 py-3.5">Name</th>
+                    <th className="px-6 py-3.5">Category</th>
+                    <th className="px-6 py-3.5">Price</th>
+                    <th className="px-6 py-3.5">Available</th>
+                    <th className="px-6 py-3.5">Actions</th>
                   </tr></thead>
-                  <tbody className="divide-y divide-slate-50">
+                  <tbody className="divide-y divide-[#f3f3f3]">
                     {items.map(item => (
-                      <tr key={item._id} className="hover:bg-slate-50 transition-colors">
+                      <tr key={item._id} className="hover:bg-[#f2f4f8] transition-colors">
                         <td className="px-6 py-4">
                           {item.imageUrl ? (
-                            <img src={item.imageUrl} alt={item.name} className="h-12 w-12 object-cover rounded-lg" />
+                            <img src={item.imageUrl} alt={item.name} className="h-12 w-12 object-cover rounded" />
                           ) : (
-                            <div className="h-12 w-12 bg-slate-100 rounded-lg flex items-center justify-center text-xs font-bold text-slate-400">
+                            <div className="h-12 w-12 bg-slate-100 rounded flex items-center justify-center text-xs font-medium text-slate-400">
                               {item.name[0]}
                             </div>
                           )}
                         </td>
                         <td className="px-6 py-4">
-                          <p className="font-bold text-slate-900">{item.name}</p>
-                          <p className="text-slate-400 text-xs truncate max-w-xs">{item.description}</p>
+                          <p className="font-semibold text-[#455a64]">{item.name}</p>
+                          <p className="text-[#99abb4] text-xs truncate max-w-xs">{item.description}</p>
                         </td>
-                        <td className="px-6 py-4 text-slate-600">{getCategoryName(item.categoryId)}</td>
-                        <td className="px-6 py-4 font-bold text-slate-900">${item.price?.toFixed(2)}</td>
+                        <td className="px-6 py-4 text-[#67757c]">{getCategoryName(item.categoryId)}</td>
+                        <td className="px-6 py-4 font-semibold text-[#455a64]">${item.price?.toFixed(2)}</td>
                         <td className="px-6 py-4"><Toggle checked={item.isAvailable} onChange={() => toggleAvailability(item)} /></td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => openItemModal(item)}
-                              className="text-blue-600 hover:text-blue-700 font-semibold text-sm flex items-center gap-1"
+                              className="text-[#1e88e5] hover:text-[#1976d2] font-medium text-sm flex items-center gap-1"
                             >
                               <Edit2 className="h-4 w-4" /> Edit
                             </button>
                             <button
                               onClick={() => handleDeleteItem(item._id, item.name)}
-                              className="text-red-600 hover:text-red-700 font-semibold text-sm flex items-center gap-1"
+                              className="text-red-600 hover:text-red-700 font-medium text-sm flex items-center gap-1"
                             >
                               <Trash2 className="h-4 w-4" /> Delete
                             </button>

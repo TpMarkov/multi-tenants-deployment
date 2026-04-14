@@ -10,7 +10,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className="antialiased">
-        <main className="min-h-screen bg-slate-50">
+        <main className="min-h-screen bg-[#eef5f9]">
           {children}
         </main>
       </body>

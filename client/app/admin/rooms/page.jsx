@@ -22,14 +22,14 @@ function Modal({ title, onClose, children }) {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl"
+        className="bg-white rounded-md p-6 max-w-md w-full shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-5">
-          <h3 className="text-lg font-black text-slate-900">{title}</h3>
+          <h3 className="text-lg font-semibold text-[#455a64]">{title}</h3>
           <button
             onClick={onClose}
-            className="p-1.5 hover:bg-slate-100 rounded-xl transition-colors"
+            className="p-1.5 hover:bg-slate-100 rounded transition-colors"
           >
             <X className="h-4 w-4" />
           </button>
@@ -65,33 +65,33 @@ function QRModal({ room, propertyId, onClose }) {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center"
+        className="bg-white rounded-md p-8 max-w-sm w-full shadow-xl text-center"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-5">
-          <h3 className="text-lg font-black text-slate-900">
+          <h3 className="text-lg font-semibold text-[#455a64]">
             QR Code — Room {room.roomNumber}
           </h3>
           <button
             onClick={onClose}
-            className="p-1.5 hover:bg-slate-100 rounded-xl transition-colors"
+            className="p-1.5 hover:bg-slate-100 rounded transition-colors"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
         {qrDataUrl ? (
           <>
-            <div className="bg-white border-2 border-slate-100 rounded-2xl inline-block p-3 mb-4 shadow-inner">
+            <div className="bg-white border-2 border-slate-100 rounded inline-block p-3 mb-4">
               <img
                 src={qrDataUrl}
                 alt={`QR for room ${room.roomNumber}`}
                 className="w-56 h-56"
               />
             </div>
-            <p className="text-xs text-slate-400 mb-4 break-all">{url}</p>
+            <p className="text-xs text-[#99abb4] mb-4 break-all">{url}</p>
             <button
               onClick={downloadQR}
-              className="w-full flex items-center justify-center gap-2 bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-black transition-all"
+              className="w-full flex items-center justify-center gap-2 bg-[#1e88e5] text-white py-3 rounded font-medium hover:bg-[#1976d2] transition-all"
             >
               <Download className="h-4 w-4" /> Download PNG
             </button>
@@ -170,7 +170,7 @@ export default function RoomsPage() {
         <Modal title="Add New Room" onClose={() => setShowModal(false)}>
           <form onSubmit={handleCreate} className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
+              <label className="block text-sm font-semibold text-[#67757c] mb-2">
                 Room Number
               </label>
               <input
@@ -178,13 +178,13 @@ export default function RoomsPage() {
                 onChange={(e) => setRoomNumber(e.target.value)}
                 required
                 placeholder="e.g. 101, 202, Suite A"
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 border border-slate-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#1e88e5]"
               />
             </div>
             <button
               type="submit"
               disabled={saving}
-              className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all disabled:opacity-60"
+              className="w-full bg-[#1e88e5] text-white py-3 rounded font-semibold flex items-center justify-center gap-2 hover:bg-[#1976d2] transition-all disabled:opacity-60"
             >
               {saving && <Loader2 className="h-4 w-4 animate-spin" />} Create
               Room
@@ -202,18 +202,18 @@ export default function RoomsPage() {
 
       <div className="flex-1 p-6">
         <div className="flex items-center justify-between mb-6">
-          <p className="text-slate-500 text-sm">
+          <p className="text-[#67757c] text-sm">
             {rooms.length} room{rooms.length !== 1 ? "s" : ""} configured
           </p>
           <button
             onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all"
+            className="flex items-center gap-2 px-4 py-2.5 bg-[#1e88e5] text-white rounded text-sm font-medium hover:bg-[#1976d2] transition-all"
           >
             <Plus className="h-4 w-4" /> Add Room
           </button>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <div className="bg-white rounded-md shadow-sm overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center h-64">
               <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
@@ -231,33 +231,33 @@ export default function RoomsPage() {
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-slate-50 text-left text-slate-400 text-xs uppercase tracking-wider">
-                  <th className="px-6 py-3.5 font-semibold">Room Number</th>
-                  <th className="px-6 py-3.5 font-semibold">Guest URL</th>
-                  <th className="px-6 py-3.5 font-semibold">Created</th>
-                  <th className="px-6 py-3.5 font-semibold">Actions</th>
+                <tr className="bg-slate-50 text-left text-[#455a64] text-xs uppercase font-semibold">
+                  <th className="px-6 py-3.5">Room Number</th>
+                  <th className="px-6 py-3.5">Guest URL</th>
+                  <th className="px-6 py-3.5">Created</th>
+                  <th className="px-6 py-3.5">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
+              <tbody className="divide-y divide-[#f3f3f3]">
                 {rooms.map((room) => (
                   <tr
                     key={room._id}
-                    className="hover:bg-slate-50 transition-colors"
+                    className="hover:bg-[#f2f4f8] transition-colors"
                   >
-                    <td className="px-6 py-4 font-black text-slate-900 text-lg">
+                    <td className="px-6 py-4 font-semibold text-[#455a64] text-base">
                       {room.roomNumber}
                     </td>
-                    <td className="px-6 py-4 text-slate-400 text-xs font-mono truncate max-w-xs">
+                    <td className="px-6 py-4 text-[#99abb4] text-xs font-mono truncate max-w-xs">
                       /property/{pid}/room/{room.roomNumber}
                     </td>
-                    <td className="px-6 py-4 text-slate-400 text-xs">
+                    <td className="px-6 py-4 text-[#99abb4] text-xs">
                       {new Date(room.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => setQrRoom(room)}
-                          className="flex items-center gap-1.5 text-blue-600 hover:text-blue-800 font-semibold text-xs transition-colors"
+                          className="flex items-center gap-1.5 text-[#1e88e5] hover:text-[#1976d2] font-medium text-xs transition-colors"
                         >
                           <QrCode className="h-4 w-4" /> QR
                         </button>
@@ -265,7 +265,7 @@ export default function RoomsPage() {
                           onClick={() =>
                             handleDeleteRoom(room._id, room.roomNumber)
                           }
-                          className="flex items-center gap-1.5 text-red-600 hover:text-red-800 font-semibold text-xs transition-colors"
+                          className="flex items-center gap-1.5 text-red-600 hover:text-red-700 font-medium text-xs transition-colors"
                         >
                           <Trash2 className="h-4 w-4" /> Delete
                         </button>

@@ -30,9 +30,9 @@ const STATUS_STYLES = {
     dot: "bg-purple-500",
   },
   delivered: {
-    bg: "bg-green-100",
-    text: "text-green-700",
-    dot: "bg-green-500",
+    bg: "bg-[#26c6da]",
+    text: "text-white",
+    dot: "bg-green-400",
   },
 };
 
@@ -77,23 +77,23 @@ function StatusDropdown({ order, onUpdate }) {
       <button
         onClick={() => setOpen((v) => !v)}
         disabled={loading}
-        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold capitalize border border-transparent hover:border-slate-300 transition-all group"
+        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium capitalize border border-transparent hover:border-slate-300 transition-all group"
       >
         {loading ? (
           <Loader2 className="h-3 w-3 animate-spin" />
         ) : (
           <StatusBadge status={order.status} />
         )}
-        <ChevronDown className="h-3 w-3 text-slate-400" />
+        <ChevronDown className="h-3 w-3 text-[#99abb4]" />
       </button>
 
       {open && (
-        <div className="absolute right-0 top-8 z-50 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden min-w-36">
+        <div className="absolute right-0 top-8 z-50 bg-white border border-slate-200 rounded shadow-lg overflow-hidden min-w-36">
           {nextStatuses.map((s) => (
             <button
               key={s}
               onClick={() => handleChange(s)}
-              className="flex items-center gap-2 w-full px-3 py-2.5 text-left text-sm hover:bg-slate-50 transition-colors"
+              className="flex items-center gap-2 w-full px-3 py-2.5 text-left text-sm hover:bg-[#f2f4f8] transition-colors"
             >
               <span
                 className={`h-2 w-2 rounded-full ${STATUS_STYLES[s]?.dot}`}
@@ -115,17 +115,19 @@ function OrderModal({ order, onClose }) {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl"
+        className="bg-white rounded-md p-6 max-w-md w-full shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between mb-5">
           <div>
-            <h3 className="text-lg font-black text-slate-900">Order Details</h3>
-            <p className="text-slate-400 text-xs mt-0.5">ID: {order._id}</p>
+            <h3 className="text-lg font-semibold text-[#455a64]">
+              Order Details
+            </h3>
+            <p className="text-[#99abb4] text-xs mt-0.5">ID: {order._id}</p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 hover:bg-slate-100 rounded-xl transition-colors"
+            className="p-1.5 hover:bg-slate-100 rounded transition-colors"
           >
             <X className="h-4 w-4" />
           </button>
@@ -133,58 +135,58 @@ function OrderModal({ order, onClose }) {
 
         <div className="space-y-2 mb-5">
           <div className="flex justify-between text-sm">
-            <span className="text-slate-500">Room</span>
-            <span className="font-semibold text-slate-900">
+            <span className="text-[#99abb4]">Room</span>
+            <span className="font-semibold text-[#455a64]">
               #{order.roomId?.roomNumber || "Unknown"}
             </span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-slate-500">Status</span>
+            <span className="text-[#99abb4]">Status</span>
             <StatusBadge status={order.status} />
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-slate-500">Time</span>
-            <span className="font-semibold text-slate-900">
+            <span className="text-[#99abb4]">Time</span>
+            <span className="font-semibold text-[#455a64]">
               {new Date(order.createdAt).toLocaleString()}
             </span>
           </div>
           {order.specialInstructions && (
             <div className="text-sm">
-              <span className="text-slate-500">Note: </span>
-              <span className="text-slate-700 italic">
+              <span className="text-[#99abb4]">Note: </span>
+              <span className="text-[#67757c] italic">
                 {order.specialInstructions}
               </span>
             </div>
           )}
         </div>
 
-        <div className="border-t border-slate-100 pt-4">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
+        <div className="border-t border-[#f3f3f3] pt-4">
+          <p className="text-xs font-semibold text-[#99abb4] uppercase tracking-wider mb-3">
             Order Items
           </p>
           <div className="space-y-3">
             {order.items?.map((item, i) => (
               <div key={i} className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-slate-900">
+                  <p className="text-sm font-semibold text-[#455a64]">
                     {item.name}
                   </p>
                   {item.specialInstructions && (
-                    <p className="text-xs text-slate-400 italic">
+                    <p className="text-xs text-[#99abb4] italic">
                       {item.specialInstructions}
                     </p>
                   )}
                 </div>
                 <div className="text-right text-sm">
                   <p className="font-semibold">${item.price?.toFixed(2)}</p>
-                  <p className="text-slate-400">× {item.quantity}</p>
+                  <p className="text-[#99abb4]">× {item.quantity}</p>
                 </div>
               </div>
             ))}
           </div>
-          <div className="flex justify-between mt-4 pt-3 border-t border-slate-100">
-            <span className="font-bold text-slate-900">Total</span>
-            <span className="font-black text-xl text-slate-900">
+          <div className="flex justify-between mt-4 pt-3 border-t border-[#f3f3f3]">
+            <span className="font-semibold text-[#455a64]">Total</span>
+            <span className="font-semibold text-xl text-[#455a64]">
               ${order.totalAmount?.toFixed(2)}
             </span>
           </div>
@@ -210,7 +212,11 @@ export default function OrdersPage() {
     try {
       console.log("📥 [Admin Orders] Fetching orders for property:", pid);
       const res = await getOrders(pid);
-      console.log("✅ [Admin Orders] Orders fetched:", res.data.data?.length, "orders");
+      console.log(
+        "✅ [Admin Orders] Orders fetched:",
+        res.data.data?.length,
+        "orders",
+      );
       setOrders(res.data.data || []);
     } catch (err) {
       console.error("❌ [Admin Orders] Failed to fetch orders:", err);
@@ -243,7 +249,12 @@ export default function OrdersPage() {
     });
 
     socket.on("order_updated", ({ orderId, status }) => {
-      console.log("🔄 [Admin Orders] Order updated:", orderId, "Status:", status);
+      console.log(
+        "🔄 [Admin Orders] Order updated:",
+        orderId,
+        "Status:",
+        status,
+      );
       setOrders((prev) =>
         prev.map((o) => (o._id === orderId ? { ...o, status } : o)),
       );
@@ -292,15 +303,15 @@ export default function OrdersPage() {
       <div className="flex-1 p-6 flex flex-col min-h-0">
         {/* Filters + Refresh */}
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-          <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-2xl p-1.5">
+          <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg p-1">
             {["all", ...STATUS_FLOW].map((s) => (
               <button
                 key={s}
                 onClick={() => setFilter(s)}
-                className={`px-4 py-2 rounded-xl text-sm font-semibold capitalize transition-all ${
+                className={`px-4 py-2 rounded text-sm font-medium capitalize transition-all ${
                   filter === s
-                    ? "bg-slate-900 text-white shadow-sm"
-                    : "text-slate-500 hover:text-slate-800"
+                    ? "bg-[#1e88e5] text-white"
+                    : "text-[#67757c] hover:text-[#455a64]"
                 }`}
               >
                 {s}
@@ -315,15 +326,15 @@ export default function OrdersPage() {
 
           <button
             onClick={fetchOrders}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 transition-all"
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded text-sm font-medium text-slate-600 hover:bg-slate-50 transition-all"
           >
             <RefreshCw className="h-4 w-4" />
             Refresh
           </button>
         </div>
 
-        {/* Table Container - Takes available viewport height */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col flex-1 min-h-0">
+        {/* Table Container */}
+        <div className="bg-white rounded-md shadow-sm overflow-hidden flex flex-col flex-1 min-h-0">
           {loading ? (
             <div className="flex items-center justify-center h-64">
               <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
@@ -333,9 +344,6 @@ export default function OrdersPage() {
               <div className="text-center py-20 text-slate-400">
                 <ShoppingBag className="h-12 w-12 mx-auto mb-3 opacity-25" />
                 <p className="font-semibold text-slate-500">No orders found</p>
-                <p className="text-sm mt-1">
-                  Orders from guests will appear here in real-time.
-                </p>
               </div>
             </div>
           ) : (
@@ -344,34 +352,34 @@ export default function OrdersPage() {
               <div className="overflow-x-auto overflow-y-auto flex-1 min-h-0">
                 <table className="w-full text-sm">
                   <thead className="sticky top-0 z-10">
-                    <tr className="bg-slate-50 text-left text-slate-400 text-xs uppercase tracking-wider">
-                      <th className="px-6 py-3.5 font-semibold">Room</th>
-                      <th className="px-6 py-3.5 font-semibold">Items</th>
-                      <th className="px-6 py-3.5 font-semibold">Total</th>
-                      <th className="px-6 py-3.5 font-semibold">Status</th>
-                      <th className="px-6 py-3.5 font-semibold">Time</th>
-                      <th className="px-6 py-3.5 font-semibold">Actions</th>
+                    <tr className="bg-slate-50 text-left text-[#455a64] text-xs uppercase font-semibold">
+                      <th className="px-6 py-3.5">Room</th>
+                      <th className="px-6 py-3.5">Items</th>
+                      <th className="px-6 py-3.5">Total</th>
+                      <th className="px-6 py-3.5">Status</th>
+                      <th className="px-6 py-3.5">Time</th>
+                      <th className="px-6 py-3.5">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-50">
+                  <tbody className="divide-y divide-[#f3f3f3]">
                     {paginatedOrders.map((order) => (
                       <tr
                         key={order._id}
-                        className={`transition-colors group ${
+                        className={`transition-colors ${
                           highlightedOrderId === order._id
                             ? "bg-blue-50 hover:bg-blue-100"
-                            : "hover:bg-slate-50"
+                            : "hover:bg-[#f2f4f8]"
                         }`}
                       >
-                        <td className="px-6 py-4 font-black text-slate-900 text-base">
+                        <td className="px-6 py-4 font-semibold text-[#455a64]">
                           #{order.roomId?.roomNumber || "Unknown"}
                         </td>
-                        <td className="px-6 py-4 text-slate-600 max-w-[200px] truncate">
+                        <td className="px-6 py-4 text-[#67757c] max-w-[200px] truncate">
                           {order.items
                             ?.map((i) => `${i.name} ×${i.quantity}`)
                             .join(", ")}
                         </td>
-                        <td className="px-6 py-4 font-bold text-slate-900">
+                        <td className="px-6 py-4 font-semibold text-[#455a64]">
                           ${order.totalAmount?.toFixed(2)}
                         </td>
                         <td className="px-6 py-4">
@@ -380,20 +388,20 @@ export default function OrdersPage() {
                             onUpdate={handleStatusUpdate}
                           />
                         </td>
-                        <td className="px-6 py-4 text-slate-400 text-xs">
+                        <td className="px-6 py-4 text-[#99abb4] text-xs">
                           {new Date(order.createdAt).toLocaleTimeString([], {
                             hour: "2-digit",
                             minute: "2-digit",
                           })}
                           <br />
-                          <span className="text-slate-300">
+                          <span className="text-[#99abb4]">
                             {new Date(order.createdAt).toLocaleDateString()}
                           </span>
                         </td>
                         <td className="px-6 py-4">
                           <button
                             onClick={() => setSelectedOrder(order)}
-                            className="text-xs text-blue-600 hover:text-blue-800 font-semibold hover:underline"
+                            className="text-xs text-[#1e88e5] hover:text-[#1e88e5] font-medium hover:underline"
                           >
                             View
                           </button>
@@ -405,9 +413,9 @@ export default function OrdersPage() {
               </div>
 
               {/* Pagination Controls */}
-              <div className="border-t border-slate-100 px-6 py-4 bg-slate-50 flex items-center justify-between flex-wrap gap-3">
+              <div className="border-t border-[#f3f3f3] px-6 py-4 bg-slate-50 flex items-center justify-between flex-wrap gap-3">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold text-slate-600">
+                  <span className="text-xs font-medium text-[#67757c]">
                     Items per page:
                   </span>
                   <select
@@ -416,7 +424,7 @@ export default function OrdersPage() {
                       setItemsPerPage(Number(e.target.value));
                       setCurrentPage(1);
                     }}
-                    className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:border-slate-300 transition-colors"
+                    className="px-3 py-1.5 border border-slate-200 rounded text-sm font-medium text-slate-700 hover:border-slate-300 transition-colors"
                   >
                     {[5, 10, 15, 20, 25, 50].map((n) => (
                       <option key={n} value={n}>
@@ -426,7 +434,7 @@ export default function OrdersPage() {
                   </select>
                 </div>
 
-                <div className="text-xs font-semibold text-slate-600">
+                <div className="text-xs font-medium text-[#67757c]">
                   Showing {sorted.length === 0 ? 0 : startIndex + 1} to{" "}
                   {Math.min(endIndex, sorted.length)} of {sorted.length} orders
                 </div>
@@ -435,7 +443,7 @@ export default function OrdersPage() {
                   <button
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
-                    className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-1.5 rounded border border-slate-200 text-slate-600 hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </button>
@@ -456,9 +464,9 @@ export default function OrdersPage() {
                         <button
                           key={pageNum}
                           onClick={() => setCurrentPage(pageNum)}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                          className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${
                             currentPage === pageNum
-                              ? "bg-slate-900 text-white shadow-sm"
+                              ? "bg-[#1e88e5] text-white"
                               : "text-slate-600 hover:bg-white border border-slate-200"
                           }`}
                         >
@@ -473,7 +481,7 @@ export default function OrdersPage() {
                       setCurrentPage((p) => Math.min(totalPages, p + 1))
                     }
                     disabled={currentPage === totalPages || totalPages === 0}
-                    className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-1.5 rounded border border-slate-200 text-slate-600 hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </button>
