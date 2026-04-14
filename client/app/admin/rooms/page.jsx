@@ -227,44 +227,79 @@ export default function RoomsPage() {
           ) : rooms.length === 0 ? (
             <div className="text-center py-12 md:py-20 text-slate-400">
               <DoorOpen className="h-10 w-10 md:h-12 md:w-12 mx-auto mb-3 opacity-25" />
-              <p className="font-semibold text-slate-500">No rooms configured</p>
-              <p className="text-sm mt-1 hidden sm:block">Add rooms to generate QR codes for guests.</p>
+              <p className="font-semibold text-slate-500">
+                No rooms configured
+              </p>
+              <p className="text-sm mt-1 hidden sm:block">
+                Add rooms to generate QR codes for guests.
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-slate-50 text-left text-[#455a64] text-xs uppercase font-semibold">
-                    <th className="px-4 md:px-6 py-3">Room</th>
-                    <th className="px-4 md:px-6 py-3 hidden lg:table-cell">Guest URL</th>
-                    <th className="px-4 md:px-6 py-3 hidden md:table-cell">Created</th>
-                    <th className="px-4 md:px-6 py-3">Actions</th>
+                    <th className="px-3 md:px-6 py-3">Room</th>
+                    <th className="px-3 md:px-6 py-3 hidden sm:table-cell">
+                      Guest URL
+                    </th>
+                    <th className="px-3 md:px-6 py-3 hidden md:table-cell">
+                      Access Token
+                    </th>
+                    <th className="px-3 md:px-6 py-3 hidden lg:table-cell">
+                      Created
+                    </th>
+                    <th className="px-3 md:px-6 py-3">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#f3f3f3]">
                   {rooms.map((room) => (
-                    <tr key={room._id} className="hover:bg-[#f2f4f8] transition-colors">
-                      <td className="px-4 md:px-6 py-3 md:py-4 font-semibold text-[#455a64] text-base">
-                        {room.roomNumber}
+                    <tr
+                      key={room._id}
+                      className="hover:bg-[#f2f4f8] transition-colors"
+                    >
+                      <td className="px-3 md:px-6 py-3 md:py-4">
+                        <span className="font-semibold text-[#455a64] text-base">
+                          {room.roomNumber}
+                        </span>
                       </td>
-                      <td className="px-4 md:px-6 py-3 md:py-4 text-[#99abb4] text-xs font-mono truncate max-w-[100px] lg:max-w-xs hidden lg:table-cell">
-                        /{pid}/{room.roomNumber}
+                      <td className="px-3 md:px-6 py-3 md:py-4 hidden sm:table-cell">
+                        <div className="max-w-[180px] lg:max-w-xs">
+                          <p
+                            className="text-[#67757c] text-xs font-mono truncate"
+                            title={`/property/${pid}/room/${room.roomNumber}`}
+                          >
+                            /property/{pid}/room/{room.roomNumber}
+                          </p>
+                        </div>
                       </td>
-                      <td className="px-4 md:px-6 py-3 md:py-4 text-[#99abb4] text-xs hidden md:table-cell">
-                        {new Date(room.createdAt).toLocaleDateString()}
+                      <td className="px-3 md:px-6 py-3 md:py-4 hidden md:table-cell">
+                        <p
+                          className="text-[#99abb4] text-xs font-mono truncate max-w-[100px]"
+                          title={room.accessToken}
+                        >
+                          {room.accessToken}
+                        </p>
                       </td>
-                      <td className="px-4 md:px-6 py-3 md:py-4">
+                      <td className="px-3 md:px-6 py-3 md:py-4 hidden lg:table-cell">
+                        <span className="text-[#99abb4] text-xs">
+                          {new Date(room.createdAt).toLocaleDateString()}
+                        </span>
+                      </td>
+                      <td className="px-3 md:px-6 py-3 md:py-4">
                         <div className="flex items-center gap-1 md:gap-2">
                           <button
                             onClick={() => setQrRoom(room)}
-                            className="flex items-center gap-1 text-[#1e88e5] hover:text-[#1976d2] font-medium text-xs transition-colors px-2 py-1 bg-blue-50 rounded"
+                            className="flex items-center gap-1 text-[#1e88e5] hover:text-[#1976d2] font-medium text-xs transition-colors px-2 py-1.5 bg-blue-50 rounded"
                           >
                             <QrCode className="h-3 w-3 md:h-4 md:w-4" />
                             <span className="hidden sm:inline">QR</span>
                           </button>
                           <button
-                            onClick={() => handleDeleteRoom(room._id, room.roomNumber)}
-                            className="flex items-center gap-1 text-red-600 hover:text-red-700 font-medium text-xs transition-colors px-2 py-1"
+                            onClick={() =>
+                              handleDeleteRoom(room._id, room.roomNumber)
+                            }
+                            className="flex items-center gap-1 text-red-600 hover:text-red-700 font-medium text-xs transition-colors px-2 py-1.5"
                           >
                             <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
                             <span className="hidden sm:inline">Delete</span>
