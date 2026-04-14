@@ -82,7 +82,7 @@ export const validateQRSession = asyncHandler(async (req, res, next) => {
   // If not found in QRSession, check Room model directly
   if (!qrSession) {
     console.log("🔍 [ValidateQR] Not found in QRSession, checking Room model");
-    const room = await Room.findOne({ accessToken: sessionToken }).populate("propertyId");
+    const room = await Room.findOne({ accessToken: sessionToken });
 
     if (!room) {
       console.error("❌ [ValidateQR] Token not found in any collection");
@@ -98,10 +98,9 @@ export const validateQRSession = asyncHandler(async (req, res, next) => {
       data: {
         roomId: room._id,
         roomNumber: room.roomNumber,
-        propertyId: room.propertyId._id,
+        propertyId: room.propertyId,
       },
     });
-
 
   }
 
@@ -122,9 +121,9 @@ export const validateQRSession = asyncHandler(async (req, res, next) => {
   res.status(200).json({
     success: true,
     data: {
-      roomId: qrSession.roomId._id,
-      roomNumber: qrSession.roomId.roomNumber,
-      propertyId: qrSession.propertyId._id,
+      roomId: qrSession.roomId?._id || qrSession.roomId,
+      roomNumber: qrSession.roomId?.roomNumber || "Unknown",
+      propertyId: qrSession.propertyId?._id || qrSession.propertyId,
     },
   });
 });
