@@ -1,0 +1,13 @@
+__turbopack_load_page_chunks__("/_app", [
+  "static/chunks/01yz_next_dist_compiled_0u5rhzm._.js",
+  "static/chunks/01yz_next_dist_shared_lib_096l~56._.js",
+  "static/chunks/01yz_next_dist_client_0iwsc_8._.js",
+  "static/chunks/01yz_next_dist_02w85-8._.js",
+  "static/chunks/01yz_next_app_0w.5nb2.js",
+  "static/chunks/[next]_entry_page-loader_ts_0vfts49._.js",
+  "static/chunks/01yz_react-dom_0l3c~jk._.js",
+  "static/chunks/01yz_0-w4uj9._.js",
+  "static/chunks/[root-of-the-server]__05dlfz0._.js",
+  "static/chunks/0zh1_room-service_multi-tenant-hospitality_client_pages__app_07xvfw~._.js",
+  "static/chunks/0223_room-service_multi-tenant-hospitality_client_pages__app_06o-.oq._.js"
+])

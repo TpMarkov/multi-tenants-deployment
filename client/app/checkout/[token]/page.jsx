@@ -153,7 +153,9 @@ function CheckoutPageContent() {
           Add some delicious items from our menu to get started.
         </p>
         <Link
-          href={sessionToken ? `/?token=${sessionToken}` : "/"}
+          href={roomData?.propertyId && roomData?.roomId 
+            ? `/property/${roomData.propertyId}/room/${roomData.roomId}` 
+            : "/"}
           className="bg-black text-white px-8 py-3 rounded-full font-bold shadow-lg"
         >
           View Menu
@@ -165,7 +167,9 @@ function CheckoutPageContent() {
   return (
     <div className="min-h-screen bg-white pb-32">
       <header className="sticky top-0 bg-white z-10 p-4 border-b flex items-center gap-4">
-        <Link href={sessionToken ? `/?token=${sessionToken}` : "/"}>
+        <Link href={roomData?.propertyId && roomData?.roomId 
+          ? `/property/${roomData.propertyId}/room/${roomData.roomId}` 
+          : "/"}>
           <div className="p-2 -ml-2 rounded-full hover:bg-slate-100">
             <ArrowLeft className="h-6 w-6" />
           </div>
