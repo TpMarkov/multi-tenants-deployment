@@ -74,16 +74,42 @@ export const validateQRSession = asyncHandler(async (req, res, next) => {
     return res.status(401).json({ success: false, error: "Invalid QR code" });
   }
 
-  // Find QR session
-  const qrSession = await QRSession.findOne({
+  // First, try to find QR session
+  let qrSession = await QRSession.findOne({
     accessToken: sessionToken,
   }).populate("roomId propertyId");
 
+  // If not found in QRSession, check Room model directly
   if (!qrSession) {
-    console.error("❌ [ValidateQR] QR session not found");
-    return res
-      .status(404)
-      .json({ success: false, error: "Invalid or expired QR code" });
+    console.log("🔍 [ValidateQR] Not found in QRSession, checking Room model");
+    const room = await Room.findOne({ accessToken: sessionToken }).populate("propertyId");
+    
+    if (!room) {
+      console.error("❌ [ValidateQR] Token not found in any collection");
+      return res
+        .status(404)
+        .json({ success: false, error: "Invalid or expired QR code" });
+    }
+
+    // Check if the room has a valid QRSession that might have expired
+    const existingSession = await QRSession.findOne({ roomId: room._id });
+    if (!existingSession || new Date() > existingSession.expiresAt) {
+      console.error("❌ [ValidateQR] QR session expired");
+      return res
+        .status(401)
+        .json({ success: false, error: "QR code has expired" });
+    }
+
+    // Valid room found
+    console.log("✅ [ValidateQR] Valid room found:", room.roomNumber);
+    return res.status(200).json({
+      success: true,
+      data: {
+        roomId: room._id,
+        roomNumber: room.roomNumber,
+        propertyId: room.propertyId._id,
+      },
+    });
   }
 
   // Check if expired
@@ -144,23 +170,8 @@ export const createRoom = asyncHandler(async (req, res, next) => {
 
   const room = await Room.create(req.body);
 
-  // Create QR session with temporary token (valid for 30 days)
-  const sessionToken = crypto.randomBytes(32).toString("hex");
-  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
-
-  const qrSession = await QRSession.findOneAndUpdate(
-    { roomId: room._id },
-    {
-      roomId: room._id,
-      propertyId: room.propertyId,
-      accessToken: sessionToken,
-      expiresAt,
-    },
-    { upsert: true, new: true },
-  );
-
-  // Generate QR code with only session token (no propertyId, no roomNumber exposed)
-  const url = `/access/${sessionToken}`;
+  // Generate QR code using the room's accessToken directly (no separate session needed)
+  const url = `/access/${room.accessToken}`;
   const qrCodeUrl = await qrcode.toDataURL(url);
   room.qrCodeUrl = qrCodeUrl;
   await room.save();
@@ -303,23 +314,11 @@ export const regenerateAccessToken = asyncHandler(async (req, res, next) => {
     return res.status(403).json({ success: false, error: "Not authorized" });
   }
 
-  // Generate new QR session token
-  const sessionToken = crypto.randomBytes(32).toString("hex");
-  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
-  
-  const qrSession = await QRSession.findOneAndUpdate(
-    { roomId: room._id },
-    {
-      roomId: room._id,
-      propertyId: room.propertyId,
-      accessToken: sessionToken,
-      expiresAt,
-    },
-    { upsert: true, new: true }
-  );
+  // Generate a new access token for the room
+  room.accessToken = crypto.randomBytes(32).toString("hex");
 
-  // Regenerate QR code with only session token (no sensible data exposed in URL)
-  const url = `/access/${sessionToken}`;
+  // Generate new QR code using the room's new accessToken
+  const url = `/access/${room.accessToken}`;
   const qrCodeUrl = await qrcode.toDataURL(url);
   room.qrCodeUrl = qrCodeUrl;
   await room.save();
