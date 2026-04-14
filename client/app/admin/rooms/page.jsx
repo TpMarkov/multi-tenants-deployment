@@ -42,7 +42,7 @@ function Modal({ title, onClose, children }) {
 
 function QRModal({ room, propertyId, onClose }) {
   const [qrDataUrl, setQrDataUrl] = useState("");
-  const url = `${typeof window !== "undefined" ? window.location.origin : ""}/checkout/${room.accessToken}`;
+  const url = `${typeof window !== "undefined" ? window.location.origin : ""}/access/${room.accessToken}`;
 
   useEffect(() => {
     QRCode.toDataURL(url, {
