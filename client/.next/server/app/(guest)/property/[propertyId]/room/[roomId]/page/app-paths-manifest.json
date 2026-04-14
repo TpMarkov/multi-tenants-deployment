@@ -1,3 +1,0 @@
-{
-  "/(guest)/property/[propertyId]/room/[roomId]/page": "app/(guest)/property/[propertyId]/room/[roomId]/page.js"
-}

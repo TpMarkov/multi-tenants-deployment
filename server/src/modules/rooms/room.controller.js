@@ -83,21 +83,12 @@ export const validateQRSession = asyncHandler(async (req, res, next) => {
   if (!qrSession) {
     console.log("🔍 [ValidateQR] Not found in QRSession, checking Room model");
     const room = await Room.findOne({ accessToken: sessionToken }).populate("propertyId");
-    
+
     if (!room) {
       console.error("❌ [ValidateQR] Token not found in any collection");
       return res
         .status(404)
         .json({ success: false, error: "Invalid or expired QR code" });
-    }
-
-    // Check if the room has a valid QRSession that might have expired
-    const existingSession = await QRSession.findOne({ roomId: room._id });
-    if (!existingSession || new Date() > existingSession.expiresAt) {
-      console.error("❌ [ValidateQR] QR session expired");
-      return res
-        .status(401)
-        .json({ success: false, error: "QR code has expired" });
     }
 
     // Valid room found
@@ -110,6 +101,8 @@ export const validateQRSession = asyncHandler(async (req, res, next) => {
         propertyId: room.propertyId._id,
       },
     });
+
+
   }
 
   // Check if expired
