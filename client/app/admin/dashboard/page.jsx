@@ -41,7 +41,7 @@ export default function DashboardPage() {
   const [itemsPerPage, setItemsPerPage] = useState(5);
 
   const isSuperAdmin = user?.role === "super_admin";
-  const [showAllOrders, setShowAllOrders] = useState(false);
+  const [showAllOrders, setShowAllOrders] = useState(true);
   const [properties, setProperties] = useState([]);
   const [statusFilter, setStatusFilter] = useState("");
   const [dateFrom, setDateFrom] = useState("");
@@ -69,11 +69,12 @@ export default function DashboardPage() {
     const fetchDashboard = async () => {
       setLoading(true);
       try {
-        if (isSuperAdmin && showAllOrders) {
+        if (isSuperAdmin) {
           const params = {};
           if (statusFilter) params.status = statusFilter;
 
-          // Default to today's orders if no date filters and no property filter
+          if (propertyFilter) params.propertyId = propertyFilter;
+
           if (!dateFrom && !dateTo && !propertyFilter && !statusFilter) {
             const today = new Date().toISOString().split("T")[0];
             params.startDate = today;
@@ -83,7 +84,6 @@ export default function DashboardPage() {
             if (dateTo) params.endDate = dateTo;
           }
 
-          if (propertyFilter) params.propertyId = propertyFilter;
           const res = await getAllOrders(params);
           setOrders(res.data.data || []);
         } else {
@@ -96,7 +96,7 @@ export default function DashboardPage() {
         setLoading(false);
       }
     };
-    if (pid || (isSuperAdmin && showAllOrders)) fetchDashboard();
+    if (pid || isSuperAdmin) fetchDashboard();
   }, [
     pid,
     isSuperAdmin,
