@@ -114,7 +114,7 @@ function QRModal({ room, propertyId, onClose }) {
 
 export default function RoomsPage() {
   const { propertyId, user } = useAdminStore();
-  const pid = propertyId || process.env.NEXT_PUBLIC_DEFAULT_PROPERTY_ID;
+  const pid = propertyId || user?.propertyId || process.env.NEXT_PUBLIC_DEFAULT_PROPERTY_ID;
 
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);

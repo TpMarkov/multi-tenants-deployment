@@ -197,7 +197,7 @@ function OrderModal({ order, onClose }) {
 }
 
 export default function OrdersPage() {
-  const { propertyId, token } = useAdminStore();
+  const { propertyId, token, user } = useAdminStore();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -206,7 +206,12 @@ export default function OrdersPage() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [highlightedOrderId, setHighlightedOrderId] = useState(null);
 
-  const pid = propertyId || process.env.NEXT_PUBLIC_DEFAULT_PROPERTY_ID;
+  const pid = propertyId || user?.propertyId || process.env.NEXT_PUBLIC_DEFAULT_PROPERTY_ID;
+
+  console.log("🔍 [Orders] propertyId from store:", propertyId);
+  console.log("🔍 [Orders] user?.propertyId:", user?.propertyId);
+  console.log("🔍 [Orders] user object:", user);
+  console.log("🔍 [Orders] Using pid:", pid);
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -227,6 +232,7 @@ export default function OrdersPage() {
   }, [pid]);
 
   useEffect(() => {
+    console.log("🔍 [Orders] useEffect running, pid:", pid);
     if (pid) fetchOrders();
   }, [pid, fetchOrders]);
 

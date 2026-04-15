@@ -64,7 +64,7 @@ function Modal({ title, onClose, children, large = false }) {
 
 export default function MenuPage() {
   const { propertyId, user } = useAdminStore();
-  const pid = propertyId || process.env.NEXT_PUBLIC_DEFAULT_PROPERTY_ID;
+  const pid = propertyId || user?.propertyId || process.env.NEXT_PUBLIC_DEFAULT_PROPERTY_ID;
 
   const [categories, setCategories] = useState([]);
   const [items, setItems] = useState([]);
