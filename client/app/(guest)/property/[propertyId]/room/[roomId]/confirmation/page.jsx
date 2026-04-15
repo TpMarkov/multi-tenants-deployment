@@ -1,12 +1,13 @@
 "use client";
 
-import { useSearchParams, useParams } from 'next/navigation';
+import { useSearchParams, useParams, useRouter } from 'next/navigation';
 import { CheckCircle2, Home, Package, Clock } from 'lucide-react';
 import Link from 'next/link';
 
 export default function ConfirmationPage() {
   const searchParams = useSearchParams();
   const { propertyId, roomId } = useParams();
+  const router = useRouter();
   const orderId = searchParams.get('orderId');
 
   return (
@@ -46,6 +47,13 @@ export default function ConfirmationPage() {
           <Home className="h-5 w-5" />
           Back to Menu
         </Link>
+
+        <button
+          onClick={() => router.push(`/property/${propertyId}/room/${roomId}/confirmation/feedback`)}
+          className="w-full mt-4 bg-green-500 text-white py-3 rounded-lg font-medium hover:bg-green-600 transition-colors"
+        >
+          Leave Feedback
+        </button>
       </div>
       
       <p className="mt-8 text-slate-400 text-sm">Need help? Call Guest Services from your room phone.</p>

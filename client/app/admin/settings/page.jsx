@@ -19,6 +19,7 @@ import {
   X,
   Pencil,
 } from "lucide-react";
+import FeedbackList from "@/components/admin/FeedbackList";
 
 export default function SettingsPage() {
   const { user, propertyId, logout } = useAdminStore();
@@ -215,7 +216,8 @@ export default function SettingsPage() {
     }
   };
 
-  const tabs = ["General", "Security", "Billing", "Notifications", "Team"];
+  const allTabs = ['General', 'Security', 'Billing', 'Notifications', 'Team', 'Feedback'];
+  const tabs = allTabs.filter(tab => tab !== 'Feedback' || user?.role === 'super_admin');
   const pid = propertyId || process.env.NEXT_PUBLIC_DEFAULT_PROPERTY_ID;
 
   useEffect(() => {
@@ -1006,9 +1008,14 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {activeTab !== "General" &&
+      {activeTab === "Feedback" && user?.role === "super_admin" && (
+          <FeedbackList />
+        )}
+
+        {activeTab !== "General" &&
         activeTab !== "Security" &&
-        activeTab !== "Team" && (
+        activeTab !== "Team" &&
+        activeTab !== "Feedback" && (
           <div className="bg-white rounded-xl border border-[#e5e7eb] p-12 text-center">
             <p className="text-[#667085]">
               {activeTab} settings coming soon...

@@ -94,4 +94,9 @@ export const deleteTeamMember = (id) => adminApi.delete(`/users/team/${id}`);
 // --- Admin Properties ---
 export const getProperties = () => adminApi.get("/properties");
 
+// --- Guest Feedback ---
+export const submitFeedback = (data) => api.post('/feedback', data);
+export const getFeedback = (propertyId) => adminApi.get(`/feedback${propertyId ? `?propertyId=${propertyId}` : ''}`);
+export const getFeedbackStats = (propertyId) => adminApi.get(`/feedback/stats${propertyId ? `?propertyId=${propertyId}` : ''}`);
+
 export default api;
