@@ -70,8 +70,17 @@ export default function DashboardPage() {
         if (isSuperAdmin && showAllOrders) {
           const params = {};
           if (statusFilter) params.status = statusFilter;
-          if (dateFrom) params.startDate = dateFrom;
-          if (dateTo) params.endDate = dateTo;
+
+          // Default to today's orders if no date filters and no property filter
+          if (!dateFrom && !dateTo && !propertyFilter && !statusFilter) {
+            const today = new Date().toISOString().split("T")[0];
+            params.startDate = today;
+            params.endDate = today;
+          } else {
+            if (dateFrom) params.startDate = dateFrom;
+            if (dateTo) params.endDate = dateTo;
+          }
+
           if (propertyFilter) params.propertyId = propertyFilter;
           const res = await getAllOrders(params);
           setOrders(res.data.data || []);

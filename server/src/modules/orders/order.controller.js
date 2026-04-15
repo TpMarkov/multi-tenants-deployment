@@ -176,10 +176,12 @@ export const getOrders = asyncHandler(async (req, res, next) => {
   if (startDate || endDate) {
     query.createdAt = {};
     if (startDate) {
-      query.createdAt.$gte = new Date(startDate);
+      // Start of day
+      query.createdAt.$gte = new Date(startDate + 'T00:00:00.000Z');
     }
     if (endDate) {
-      query.createdAt.$lte = new Date(endDate);
+      // End of day (include the entire day)
+      query.createdAt.$lte = new Date(endDate + 'T23:59:59.999Z');
     }
   }
 
