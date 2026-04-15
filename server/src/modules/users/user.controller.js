@@ -1,6 +1,6 @@
-import asyncHandler from '../../middlewares/asyncHandler.js';
-import User from './user.model.js';
-import { logAudit } from '../../utils/auditLogger.js';
+import asyncHandler from "../../middlewares/asyncHandler.js";
+import User from "./user.model.js";
+import { logAudit } from "../../utils/auditLogger.js";
 
 // @desc    Get all users
 // @route   GET /api/v1/users
@@ -10,7 +10,7 @@ export const getUsers = asyncHandler(async (req, res, next) => {
 
   // If super_admin, they can see all users OR filtered by property
   // If property_admin, they can only see users of their property
-  if (req.user.role === 'super_admin') {
+  if (req.user.role === "super_admin") {
     const propertyId = req.query.propertyId;
     query = propertyId ? User.find({ propertyId }) : User.find();
   } else {
@@ -22,7 +22,7 @@ export const getUsers = asyncHandler(async (req, res, next) => {
   res.status(200).json({
     success: true,
     count: users.length,
-    data: users
+    data: users,
   });
 });
 
@@ -38,15 +38,20 @@ export const createUser = asyncHandler(async (req, res, next) => {
     email,
     password,
     role,
-    propertyId
+    propertyId,
   });
 
   // Log Audit
-  await logAudit('USER_CREATED', req.user._id, req.user.propertyId || user.propertyId, { userId: user._id, role: user.role });
+  await logAudit(
+    "USER_CREATED",
+    req.user._id,
+    req.user.propertyId || user.propertyId,
+    { userId: user._id, role: user.role },
+  );
 
   res.status(201).json({
     success: true,
-    data: user
+    data: user,
   });
 });
 
@@ -58,7 +63,7 @@ export const getProfile = asyncHandler(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
-    data: user
+    data: user,
   });
 });
 
@@ -75,21 +80,25 @@ export const updateProfile = asyncHandler(async (req, res, next) => {
 
   // Check if email is already taken by another user
   if (email) {
-    const existingUser = await User.findOne({ email, _id: { $ne: req.user.id } });
+    const existingUser = await User.findOne({
+      email,
+      _id: { $ne: req.user.id },
+    });
     if (existingUser) {
-      return res.status(400).json({ success: false, error: 'Email already in use' });
+      return res
+        .status(400)
+        .json({ success: false, error: "Email already in use" });
     }
   }
 
-  const user = await User.findByIdAndUpdate(
-    req.user.id,
-    updateFields,
-    { new: true, runValidators: true }
-  );
+  const user = await User.findByIdAndUpdate(req.user.id, updateFields, {
+    new: true,
+    runValidators: true,
+  });
 
   res.status(200).json({
     success: true,
-    data: user
+    data: user,
   });
 });
 
@@ -98,28 +107,75 @@ export const updateProfile = asyncHandler(async (req, res, next) => {
 // @access  Private
 export const uploadAvatar = asyncHandler(async (req, res, next) => {
   if (!req.file) {
-    return res.status(400).json({ success: false, error: 'Please upload an image' });
+    return res
+      .status(400)
+      .json({ success: false, error: "Please upload an image" });
   }
 
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
   if (!allowedTypes.includes(req.file.mimetype)) {
-    return res.status(400).json({ success: false, error: 'Only image files are allowed' });
+    return res
+      .status(400)
+      .json({ success: false, error: "Only image files are allowed" });
   }
 
   if (req.file.size > 2 * 1024 * 1024) {
-    return res.status(400).json({ success: false, error: 'Image must be less than 2MB' });
+    return res
+      .status(400)
+      .json({ success: false, error: "Image must be less than 2MB" });
   }
 
-  const avatarUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+  const avatarUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
 
   const user = await User.findByIdAndUpdate(
     req.user.id,
     { avatar: avatarUrl },
-    { new: true }
+    { new: true },
   );
 
   res.status(200).json({
     success: true,
-    data: { avatar: user.avatar }
+    data: { avatar: user.avatar },
+  });
+});
+
+// @desc    Update password for current user
+// @route   PUT /api/v1/users/profile/password
+// @access  Private
+export const updatePassword = asyncHandler(async (req, res, next) => {
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({
+      success: false,
+      error: "Please provide current and new password",
+    });
+  }
+
+  if (newPassword.length < 6) {
+    return res.status(400).json({
+      success: false,
+      error: "New password must be at least 6 characters",
+    });
+  }
+
+  // Get user with password
+  const user = await User.findById(req.user.id).select("+password");
+
+  // Check current password
+  const isMatch = await user.matchPassword(currentPassword);
+  if (!isMatch) {
+    return res
+      .status(400)
+      .json({ success: false, error: "Current password is incorrect" });
+  }
+
+  // Update password (the pre-save hook will hash it)
+  user.password = newPassword;
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Password updated successfully",
   });
 });

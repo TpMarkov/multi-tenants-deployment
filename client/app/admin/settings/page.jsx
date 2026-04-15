@@ -11,6 +11,8 @@ import {
   Copy,
   Check,
   Camera,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 export default function SettingsPage() {
@@ -28,6 +30,59 @@ export default function SettingsPage() {
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [avatarFile, setAvatarFile] = useState(null);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
+  // Password change state
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    new: false,
+    confirm: false,
+  });
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  const handlePasswordChange = (e) => {
+    const { name, value } = e.target;
+    setPasswordData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const togglePasswordVisibility = (field) => {
+    setShowPasswords((prev) => ({ ...prev, [field]: !prev[field] }));
+  };
+
+  const handleUpdatePassword = async () => {
+    if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast.error("New passwords do not match");
+      return;
+    }
+    if (passwordData.newPassword.length < 6) {
+      toast.error("New password must be at least 6 characters");
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      const res = await adminApi.put("/users/profile/password", {
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
+      });
+      if (res.data.success) {
+        toast.success("Password updated successfully");
+        setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.error || "Failed to update password");
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
 
   const tabs = ["General", "Security", "Billing", "Notifications", "Team"];
   const pid = propertyId || process.env.NEXT_PUBLIC_DEFAULT_PROPERTY_ID;
@@ -349,7 +404,97 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {activeTab !== "General" && (
+      {activeTab === "Security" && (
+        <div className="space-y-6 max-w-3xl">
+          <div className="bg-white rounded-xl border border-[#e5e7eb] overflow-hidden">
+            <div className="p-6 border-b border-[#e5e7eb]">
+              <h2 className="text-lg font-semibold text-[#101828]">Change Password</h2>
+              <p className="text-sm text-[#667085] mt-1">Update your password to keep your account secure.</p>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-[#344054] mb-2">Current Password</label>
+                <div className="relative">
+                  <input
+                    type={showPasswords.current ? "text" : "password"}
+                    name="currentPassword"
+                    value={passwordData.currentPassword}
+                    onChange={handlePasswordChange}
+                    className="w-full px-4 py-2.5 pr-10 border border-[#d0d5dd] rounded-lg text-sm focus:ring-4 focus:ring-[#f4ebff] focus:border-[#7f56d9] outline-none transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => togglePasswordVisibility("current")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#667085]"
+                  >
+                    {showPasswords.current ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[#344054] mb-2">New Password</label>
+                <div className="relative">
+                  <input
+                    type={showPasswords.new ? "text" : "password"}
+                    name="newPassword"
+                    value={passwordData.newPassword}
+                    onChange={handlePasswordChange}
+                    className="w-full px-4 py-2.5 pr-10 border border-[#d0d5dd] rounded-lg text-sm focus:ring-4 focus:ring-[#f4ebff] focus:border-[#7f56d9] outline-none transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => togglePasswordVisibility("new")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#667085]"
+                  >
+                    {showPasswords.new ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                <p className="text-xs text-[#667085] mt-1">Must be at least 6 characters</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[#344054] mb-2">Confirm New Password</label>
+                <div className="relative">
+                  <input
+                    type={showPasswords.confirm ? "text" : "password"}
+                    name="confirmPassword"
+                    value={passwordData.confirmPassword}
+                    onChange={handlePasswordChange}
+                    className="w-full px-4 py-2.5 pr-10 border border-[#d0d5dd] rounded-lg text-sm focus:ring-4 focus:ring-[#f4ebff] focus:border-[#7f56d9] outline-none transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => togglePasswordVisibility("confirm")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#667085]"
+                  >
+                    {showPasswords.confirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 bg-[#f9fafb] flex justify-end gap-3 border-t border-[#e5e7eb]">
+              <button
+                onClick={() => setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" })}
+                className="px-5 py-2.5 text-sm font-semibold text-[#344054] border border-[#d0d5dd] rounded-lg hover:bg-white transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUpdatePassword}
+                disabled={isChangingPassword}
+                className="px-5 py-2.5 text-sm font-semibold text-white bg-[#7f56d9] rounded-lg hover:bg-[#6941c6] transition-colors disabled:opacity-50"
+              >
+                {isChangingPassword ? "Updating..." : "Update Password"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab !== "General" && activeTab !== "Security" && (
         <div className="bg-white rounded-xl border border-[#e5e7eb] p-12 text-center">
           <p className="text-[#667085]">{activeTab} settings coming soon...</p>
         </div>
