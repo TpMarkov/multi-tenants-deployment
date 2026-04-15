@@ -12,7 +12,16 @@ import {
   deleteMenuItem,
   deleteCategory,
 } from "@/lib/api";
-import { Plus, X, Loader2, UtensilsCrossed, Edit2, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Plus,
+  X,
+  Loader2,
+  UtensilsCrossed,
+  Edit2,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import toast from "react-hot-toast";
 
 function Toggle({ checked, onChange }) {
@@ -574,44 +583,49 @@ export default function MenuPage() {
                       </tr>
                     ))}
                   </tbody>
-</table>
+                </table>
               )}
 
               {activeTab === "items" && totalPages > 1 && (
                 <div className="border-t border-[#f3f3f3] px-3 md:px-6 py-3 md:py-4 bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-3">
                   <div className="flex items-center gap-2 order-2 sm:order-1">
-                    <span className="text-xs font-medium text-[#67757c]">Items per page:</span>
-                      <select
-                        value={itemsPerPage}
-                        onChange={(e) => {
-                          setItemsPerPage(Number(e.target.value));
-                          setCurrentPage(1);
-                        }}
-                        className="px-2 md:px-3 py-1 md:py-1.5 border border-slate-200 rounded text-xs md:text-sm font-medium text-slate-700 hover:border-slate-300 transition-colors"
-                      >
-                        {[5, 10, 15, 20].map((n) => (
-                          <option key={n} value={n}>
-                            {n}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                    <span className="text-xs font-medium text-[#67757c]">
+                      Items per page:
+                    </span>
+                    <select
+                      value={itemsPerPage}
+                      onChange={(e) => {
+                        setItemsPerPage(Number(e.target.value));
+                        setCurrentPage(1);
+                      }}
+                      className="px-2 md:px-3 py-1 md:py-1.5 border border-slate-200 rounded text-xs md:text-sm font-medium text-slate-700 hover:border-slate-300 transition-colors"
+                    >
+                      {[5, 10, 15, 20].map((n) => (
+                        <option key={n} value={n}>
+                          {n}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-                    <div className="text-xs font-medium text-[#67757c] order-1 sm:order-2">
-                      {startIndex + 1}-{Math.min(endIndex, items.length)} of {items.length}
-                    </div>
+                  <div className="text-xs font-medium text-[#67757c] order-1 sm:order-2">
+                    {startIndex + 1}-{Math.min(endIndex, items.length)} of{" "}
+                    {items.length}
+                  </div>
 
-                    <div className="flex items-center gap-1 order-3">
-                      <button
-                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                        disabled={currentPage === 1}
-                        className="p-1 md:p-1.5 rounded border border-slate-200 text-slate-600 hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <ChevronLeft className="h-3 w-3 md:h-4 md:w-4" />
-                      </button>
+                  <div className="flex items-center gap-1 order-3">
+                    <button
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      className="p-1 md:p-1.5 rounded border border-slate-200 text-slate-600 hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronLeft className="h-3 w-3 md:h-4 md:w-4" />
+                    </button>
 
-                      <div className="flex items-center gap-1 px-1 md:px-2">
-                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    <div className="flex items-center gap-1 px-1 md:px-2">
+                      {Array.from(
+                        { length: Math.min(5, totalPages) },
+                        (_, i) => {
                           let pageNum;
                           if (totalPages <= 5) {
                             pageNum = i + 1;
@@ -635,20 +649,21 @@ export default function MenuPage() {
                               {pageNum}
                             </button>
                           );
-                        })}
-                      </div>
-
-                      <button
-                        onClick={() =>
-                          setCurrentPage((p) => Math.min(totalPages, p + 1))
-                        }
-                        disabled={currentPage === totalPages || totalPages === 0}
-                        className="p-1 md:p-1.5 rounded border border-slate-200 text-slate-600 hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <ChevronRight className="h-3 w-3 md:h-4 md:w-4" />
-                      </button>
+                        },
+                      )}
                     </div>
-</div>
+
+                    <button
+                      onClick={() =>
+                        setCurrentPage((p) => Math.min(totalPages, p + 1))
+                      }
+                      disabled={currentPage === totalPages || totalPages === 0}
+                      className="p-1 md:p-1.5 rounded border border-slate-200 text-slate-600 hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronRight className="h-3 w-3 md:h-4 md:w-4" />
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
           )}
