@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState, useMemo } from "react";
+import { useParams } from "next/navigation";
 import { useStore } from "@/store/useStore";
 import { getCategories, getMenuItems } from "@/lib/api";
 import MenuList from "@/components/menu/MenuList";
@@ -17,68 +17,56 @@ function getCookie(name) {
   return null;
 }
 
+// Always show loading initially - no way to bypass this
 export default function MenuPage() {
-  const { propertyId: paramPropertyId, roomId: paramRoomId } = useParams();
-  const router = useRouter();
+  // Use useMemo to get params once
+  const params = useParams();
+  const paramPropertyId = params?.propertyId;
+  const paramRoomId = params?.roomId;
+  
   const setSession = useStore((state) => state.setSession);
-  const [propertyId, setPropertyId] = useState(paramPropertyId);
-  const [roomId, setRoomId] = useState(paramRoomId);
+  
+  const [propertyId, setPropertyId] = useState(null);
+  const [roomId, setRoomId] = useState(null);
   const [categories, setCategories] = useState([]);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [initializing, setInitializing] = useState(true);
 
   useEffect(() => {
-    // First check URL params
-    if (paramPropertyId && paramRoomId) {
-      setPropertyId(paramPropertyId);
-      setRoomId(paramRoomId);
-      setInitializing(false);
-      return;
-    }
-
-    // Then check cookies
-    const storedPropertyId = getCookie("propertyId");
-    const storedRoomId = getCookie("roomId");
-
-    if (storedPropertyId && storedRoomId) {
-      setPropertyId(storedPropertyId);
-      setRoomId(storedRoomId);
-    }
-    setInitializing(false);
-  }, [paramPropertyId, paramRoomId]);
-
-  useEffect(() => {
-    // Only proceed if we have both propertyId and roomId from any source
-    if (propertyId && roomId) {
-      setSession(propertyId, roomId);
-      fetchData();
-    } else if (!initializing && !paramPropertyId && !paramRoomId) {
-      // Only show error if not initializing AND no params AND no stored values
+    // Only run on client side
+    const resolvedPropertyId = paramPropertyId || getCookie("propertyId");
+    const resolvedRoomId = paramRoomId || getCookie("roomId");
+    
+    if (resolvedPropertyId && resolvedRoomId) {
+      setPropertyId(resolvedPropertyId);
+      setRoomId(resolvedRoomId);
+      setSession(resolvedPropertyId, resolvedRoomId);
+      fetchMenu(resolvedPropertyId);
+    } else {
       setError("Please scan a valid QR code to view the menu.");
       setLoading(false);
     }
-  }, [propertyId, roomId, paramPropertyId, paramRoomId, initializing]);
+  }, [paramPropertyId, paramRoomId]);
 
-  const fetchData = async () => {
+  async function fetchMenu(pid) {
     try {
-      setLoading(true);
       const [catRes, itemRes] = await Promise.all([
-        getCategories(propertyId),
-        getMenuItems(propertyId),
+        getCategories(pid),
+        getMenuItems(pid),
       ]);
-      setCategories(catRes.data.data);
-      setItems(itemRes.data.data);
+      setCategories(catRes.data.data || []);
+      setItems(itemRes.data.data || []);
     } catch (err) {
-      console.error(err);
-      setError("Failed to load menu. Please check your connection.");
+      console.error("Menu load error:", err);
+      setError("Failed to load menu");
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  if (loading || initializing) {
+  // Show loader while loading OR before params are checked
+  if (loading || propertyId === null) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
@@ -91,7 +79,11 @@ export default function MenuPage() {
       <div className="flex h-screen flex-col items-center justify-center p-4 text-center">
         <p className="text-red-500 mb-4">{error}</p>
         <button
-          onClick={fetchData}
+          onClick={() => {
+            setLoading(true);
+            setError(null);
+            fetchMenu(propertyId);
+          }}
           className="bg-blue-600 text-white px-6 py-2 rounded-full font-medium"
         >
           Retry
@@ -106,7 +98,7 @@ export default function MenuPage() {
         <h1 className="text-xl font-bold text-slate-900 leading-tight">
           Room Dining
         </h1>
-        <p className="text-sm text-slate-500">Room {roomId}</p>
+        <p className="text-sm text-slate-500">Room {roomId || "Unknown"}</p>
       </header>
 
       <CategoryNav categories={categories} />
