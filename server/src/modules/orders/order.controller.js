@@ -189,6 +189,7 @@ export const getOrders = asyncHandler(async (req, res, next) => {
 
   const orders = await Order.find(query)
     .populate("roomId", "roomNumber")
+    .populate("propertyId", "name")
     .sort("-createdAt")
     .skip(skip)
     .limit(limitNum);

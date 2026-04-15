@@ -2,7 +2,13 @@
 import { useEffect, useState } from "react";
 import TopBar from "@/components/layout/TopBar";
 import { useAdminStore } from "@/store/useAdminStore";
-import { getOrders, getAllOrders, deleteOrder, getProperties } from "@/lib/api";
+import {
+  getOrders,
+  updateOrderStatus,
+  deleteOrder,
+  getAllOrders,
+  getProperties,
+} from "@/lib/api";
 import {
   ShoppingBag,
   DollarSign,
@@ -64,8 +70,8 @@ export default function DashboardPage() {
         if (isSuperAdmin && showAllOrders) {
           const params = {};
           if (statusFilter) params.status = statusFilter;
-          if (dateFrom) params.dateFrom = dateFrom;
-          if (dateTo) params.dateTo = dateTo;
+          if (dateFrom) params.startDate = dateFrom;
+          if (dateTo) params.endDate = dateTo;
           if (propertyFilter) params.propertyId = propertyFilter;
           const res = await getAllOrders(params);
           setOrders(res.data.data || []);
@@ -146,6 +152,24 @@ export default function DashboardPage() {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const handleStatusChange = async (orderId, newStatus) => {
+    try {
+      await updateOrderStatus(orderId, newStatus);
+      setOrders((prev) =>
+        prev.map((o) => (o._id === orderId ? { ...o, status: newStatus } : o)),
+      );
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const clearFilters = () => {
+    setStatusFilter("");
+    setDateFrom("");
+    setDateTo("");
+    setPropertyFilter("");
   };
 
   return (
@@ -272,12 +296,7 @@ export default function DashboardPage() {
             {(statusFilter || dateFrom || dateTo || propertyFilter) && (
               <div className="mt-2 flex justify-end">
                 <button
-                  onClick={() => {
-                    setStatusFilter("");
-                    setDateFrom("");
-                    setDateTo("");
-                    setPropertyFilter("");
-                  }}
+                  onClick={clearFilters}
                   className="text-xs text-[#1e88e5] hover:underline flex items-center gap-1"
                 >
                   <X className="h-3 w-3" /> Clear Filters
@@ -392,15 +411,22 @@ export default function DashboardPage() {
                             </span>
                           </td>
                           <td className="px-3 md:px-4 py-2 md:py-3 hidden sm:table-cell">
-                            <span
-                              className={`px-1.5 py-0.5 rounded text-[10px] font-medium uppercase ${
+                            <select
+                              value={order.status}
+                              onChange={(e) =>
+                                handleStatusChange(order._id, e.target.value)
+                              }
+                              className={`px-1.5 py-0.5 rounded text-[10px] font-medium uppercase cursor-pointer ${
                                 order.status === "delivered"
                                   ? "bg-[#26c6da] text-white"
                                   : "bg-[#ffb22b] text-white"
                               }`}
                             >
-                              {order.status}
-                            </span>
+                              <option value="received">Received</option>
+                              <option value="preparing">Preparing</option>
+                              <option value="dispatched">Dispatched</option>
+                              <option value="delivered">Delivered</option>
+                            </select>
                           </td>
                           <td className="px-3 md:px-4 py-2 md:py-3 hidden md:table-cell">
                             <p className="text-[#455a64] font-medium text-xs">
