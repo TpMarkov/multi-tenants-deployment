@@ -190,6 +190,10 @@ export const updateItemAvailability = asyncHandler(async (req, res, next) => {
 // @route   PATCH /api/v1/menu/items/:id
 // @access  Private/Admin
 export const updateItem = asyncHandler(async (req, res, next) => {
+  console.log("🔍 [Menu Update] User:", req.user?.role, "propertyId:", req.user?.propertyId);
+  console.log("🔍 [Menu Update] Item ID:", req.params.id);
+  console.log("🔍 [Menu Update] Body:", req.body);
+
   let item = await MenuItem.findById(req.params.id);
 
   if (!item) {

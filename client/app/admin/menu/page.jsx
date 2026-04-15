@@ -64,7 +64,10 @@ function Modal({ title, onClose, children, large = false }) {
 
 export default function MenuPage() {
   const { propertyId, user } = useAdminStore();
-  const pid = propertyId || user?.propertyId || process.env.NEXT_PUBLIC_DEFAULT_PROPERTY_ID;
+  const pid =
+    propertyId ||
+    user?.propertyId ||
+    process.env.NEXT_PUBLIC_DEFAULT_PROPERTY_ID;
 
   const [categories, setCategories] = useState([]);
   const [items, setItems] = useState([]);
@@ -180,6 +183,8 @@ export default function MenuPage() {
         propertyId: pid,
       };
 
+      console.log("📤 [Menu] Saving item data:", itemData);
+
       if (editingItem) {
         // Update existing item
         const res = await updateMenuItem(editingItem._id, itemData);
@@ -205,8 +210,13 @@ export default function MenuPage() {
       setShowItemModal(false);
       setEditingItem(null);
     } catch (err) {
+      console.error(
+        "❌ [Menu] Failed to save item:",
+        err.response?.data || err.message,
+      );
       toast.error(
-        editingItem ? "Failed to update item" : "Failed to create item",
+        err.response?.data?.error ||
+          (editingItem ? "Failed to update item" : "Failed to create item"),
       );
     } finally {
       setItemSaving(false);
@@ -584,13 +594,15 @@ export default function MenuPage() {
                         </td>
                         <td className="px-3 md:px-6 py-3 md:py-4">
                           <div className="flex items-center gap-1 md:gap-2">
-                            <button
-                              onClick={() => openItemModal(item)}
-                              className="text-[#1e88e5] hover:text-[#1976d2] font-medium text-xs flex items-center gap-1 px-2 py-1"
-                            >
-                              <Edit2 className="h-3 w-3 md:h-4 md:w-4" />
-                              <span className="hidden sm:inline">Edit</span>
-                            </button>
+                            {canManageMenu && (
+                              <button
+                                onClick={() => openItemModal(item)}
+                                className="text-[#1e88e5] hover:text-[#1976d2] font-medium text-xs flex items-center gap-1 px-2 py-1"
+                              >
+                                <Edit2 className="h-3 w-3 md:h-4 md:w-4" />
+                                <span className="hidden sm:inline">Edit</span>
+                              </button>
+                            )}
                             {canManageMenu && (
                               <button
                                 onClick={() =>

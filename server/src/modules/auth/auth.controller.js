@@ -34,6 +34,41 @@ export const login = asyncHandler(async (req, res, next) => {
     propertyId: user.propertyId 
   });
 
+  // Build permissions object based on role (fallback in case not in database)
+  const buildPermissions = (role) => {
+    switch (role) {
+      case 'super_admin':
+        return {
+          canViewAll: true,
+          canManageRooms: true,
+          canManageMenu: true,
+          canToggleMenuAvailability: true,
+          noSettings: false,
+        };
+      case 'property_admin':
+        return {
+          canViewAll: true,
+          canManageRooms: false,
+          canManageMenu: false,
+          canToggleMenuAvailability: true,
+          noSettings: false,
+        };
+      case 'staff':
+        return {
+          canViewAll: true,
+          canManageRooms: false,
+          canManageMenu: false,
+          canToggleMenuAvailability: true,
+          noSettings: true,
+        };
+      default:
+        return {};
+    }
+  };
+
+  // Use user.permissions if exists, otherwise build from role
+  const permissions = user.permissions || buildPermissions(user.role);
+
   res.status(200).json({
     success: true,
     token,
@@ -43,7 +78,8 @@ export const login = asyncHandler(async (req, res, next) => {
       email: user.email,
       role: user.role,
       propertyId: user.propertyId,
-      avatar: user.avatar
+      avatar: user.avatar,
+      permissions
     }
   });
 });

@@ -45,7 +45,7 @@ router.patch(
 router.patch(
   "/items/:id",
   protect,
-  authorize("super_admin", "property_admin"),
+  authorize("super_admin"),
   updateItem,
 );
 router.delete(

@@ -1,19 +1,25 @@
-import { verifyToken } from '../utils/jwt.js';
-import User from '../modules/users/user.model.js';
-import asyncHandler from './asyncHandler.js';
+import { verifyToken } from "../utils/jwt.js";
+import User from "../modules/users/user.model.js";
+import asyncHandler from "./asyncHandler.js";
 
 export const protect = asyncHandler(async (req, res, next) => {
+  console.log(
+    "🔍 [Auth] Headers:",
+    req.headers.authorization?.substring(0, 50),
+  );
   let token;
 
   if (
     req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
+    req.headers.authorization.startsWith("Bearer")
   ) {
-    token = req.headers.authorization.split(' ')[1];
+    token = req.headers.authorization.split(" ")[1];
   }
 
   if (!token) {
-    return res.status(401).json({ success: false, error: 'Not authorized to access this route' });
+    return res
+      .status(401)
+      .json({ success: false, error: "Not authorized to access this route" });
   }
 
   try {
@@ -23,12 +29,14 @@ export const protect = asyncHandler(async (req, res, next) => {
     req.user = await User.findById(decoded.id);
 
     if (!req.user) {
-      return res.status(401).json({ success: false, error: 'User not found' });
+      return res.status(401).json({ success: false, error: "User not found" });
     }
 
     next();
   } catch (err) {
-    return res.status(401).json({ success: false, error: 'Not authorized to access this route' });
+    return res
+      .status(401)
+      .json({ success: false, error: "Not authorized to access this route" });
   }
 });
 
