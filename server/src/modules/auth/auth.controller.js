@@ -42,7 +42,8 @@ export const login = asyncHandler(async (req, res, next) => {
       name: user.name,
       email: user.email,
       role: user.role,
-      propertyId: user.propertyId
+      propertyId: user.propertyId,
+      avatar: user.avatar
     }
   });
 });

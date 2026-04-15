@@ -71,8 +71,12 @@ export default function Sidebar({ onClose }) {
       {/* User info + logout */}
       <div className="p-6 border-t border-[#3e4d5c]">
         <div className="flex items-center gap-3 mb-4">
-          <div className="h-10 w-10 rounded-full bg-[#1e88e5] flex items-center justify-center text-white font-bold">
-            {user?.name?.[0] || 'A'}
+          <div className="h-10 w-10 rounded-full bg-[#1e88e5] flex items-center justify-center text-white font-bold overflow-hidden">
+            {user?.avatar ? (
+              <img src={user.avatar} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              user?.name?.[0] || 'A'
+            )}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-white text-sm font-medium truncate">{user?.name || 'Admin'}</p>

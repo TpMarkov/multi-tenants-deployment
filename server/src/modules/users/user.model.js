@@ -34,6 +34,10 @@ const userSchema = new mongoose.Schema(
         return this.role !== 'super_admin';
       },
     },
+    avatar: {
+      type: String,
+      default: null
+    },
   },
   { timestamps: true }
 );

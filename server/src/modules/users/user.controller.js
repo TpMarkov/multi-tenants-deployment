@@ -92,3 +92,34 @@ export const updateProfile = asyncHandler(async (req, res, next) => {
     data: user
   });
 });
+
+// @desc    Upload avatar for current user
+// @route   POST /api/v1/users/profile/avatar
+// @access  Private
+export const uploadAvatar = asyncHandler(async (req, res, next) => {
+  if (!req.file) {
+    return res.status(400).json({ success: false, error: 'Please upload an image' });
+  }
+
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  if (!allowedTypes.includes(req.file.mimetype)) {
+    return res.status(400).json({ success: false, error: 'Only image files are allowed' });
+  }
+
+  if (req.file.size > 2 * 1024 * 1024) {
+    return res.status(400).json({ success: false, error: 'Image must be less than 2MB' });
+  }
+
+  const avatarUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+
+  const user = await User.findByIdAndUpdate(
+    req.user.id,
+    { avatar: avatarUrl },
+    { new: true }
+  );
+
+  res.status(200).json({
+    success: true,
+    data: { avatar: user.avatar }
+  });
+});

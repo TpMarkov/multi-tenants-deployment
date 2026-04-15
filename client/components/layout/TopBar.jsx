@@ -32,8 +32,12 @@ export default function TopBar({ title }) {
               {user?.role?.replace("_", " ")}
             </p>
           </div>
-          <div className="h-9 w-9 rounded-full bg-white text-[#1e88e5] flex items-center justify-center font-bold border-2 border-white/20">
-            {user?.name?.[0] || "A"}
+          <div className="h-9 w-9 rounded-full bg-white flex items-center justify-center font-bold border-2 border-white/20 overflow-hidden">
+            {user?.avatar ? (
+              <img src={user.avatar} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-[#1e88e5]">{user?.name?.[0] || 'A'}</span>
+            )}
           </div>
         </div>
       </div>
