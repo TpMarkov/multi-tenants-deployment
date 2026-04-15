@@ -1,16 +1,16 @@
-import axios from 'axios';
-import { useAdminStore } from '@/store/useAdminStore';
+import axios from "axios";
+import { useAdminStore } from "@/store/useAdminStore";
 
 // Guest API (no auth)
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1',
-  headers: { 'Content-Type': 'application/json' },
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1",
+  headers: { "Content-Type": "application/json" },
 });
 
 // Admin API (with auth token injected)
 export const adminApi = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1',
-  headers: { 'Content-Type': 'application/json' },
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1",
+  headers: { "Content-Type": "application/json" },
 });
 
 // Inject JWT from store on every request
@@ -28,49 +28,66 @@ adminApi.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       useAdminStore.getState().logout();
-      if (typeof window !== 'undefined') {
-        window.location.href = '/admin/login';
+      if (typeof window !== "undefined") {
+        window.location.href = "/admin/login";
       }
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 // --- Guest endpoints ---
-export const getCategories = (propertyId) => api.get(`/menu/categories?propertyId=${propertyId}`);
-export const getMenuItems = (propertyId) => api.get(`/menu/items?propertyId=${propertyId}`);
-export const validateQRSession = (sessionToken) => api.get(`/rooms/validate-qr/${sessionToken}`);
-export const getRoomByNumber = (propertyId, roomNumber, token) => api.get(`/rooms/by-number/${roomNumber}?propertyId=${propertyId}&token=${token}`);
-export const createOrder = (orderData) => api.post('/orders', orderData);
+export const getCategories = (propertyId) =>
+  api.get(`/menu/categories?propertyId=${propertyId}`);
+export const getMenuItems = (propertyId) =>
+  api.get(`/menu/items?propertyId=${propertyId}`);
+export const validateQRSession = (sessionToken) =>
+  api.get(`/rooms/validate-qr/${sessionToken}`);
+export const getRoomByNumber = (propertyId, roomNumber, token) =>
+  api.get(
+    `/rooms/by-number/${roomNumber}?propertyId=${propertyId}&token=${token}`,
+  );
+export const createOrder = (orderData) => api.post("/orders", orderData);
 
 // --- Admin Auth ---
-export const loginAdmin = (credentials) => api.post('/auth/login', credentials);
+export const loginAdmin = (credentials) => api.post("/auth/login", credentials);
 
 // --- Admin Orders ---
-export const getOrders = (propertyId) => adminApi.get(`/orders?propertyId=${propertyId}`);
-export const updateOrderStatus = (id, status) => adminApi.patch(`/orders/${id}/status`, { status });
+export const getOrders = (propertyId) =>
+  adminApi.get(`/orders?propertyId=${propertyId}`);
+export const updateOrderStatus = (id, status) =>
+  adminApi.patch(`/orders/${id}/status`, { status });
+export const deleteOrder = (id) => adminApi.delete(`/orders/${id}`);
+export const getAllOrders = (params) => {
+  const queryString = new URLSearchParams(params).toString();
+  return adminApi.get(`/orders?${queryString}`);
+};
 
 // --- Admin Menu ---
-export const createCategory = (data) => adminApi.post('/menu/categories', data);
-export const createMenuItem = (data) => adminApi.post('/menu/items', data);
-export const updateMenuItem = (id, data) => adminApi.patch(`/menu/items/${id}`, data);
+export const createCategory = (data) => adminApi.post("/menu/categories", data);
+export const createMenuItem = (data) => adminApi.post("/menu/items", data);
+export const updateMenuItem = (id, data) =>
+  adminApi.patch(`/menu/items/${id}`, data);
 export const updateMenuItemAvailability = (id, isAvailable) =>
   adminApi.patch(`/menu/items/${id}/availability`, { isAvailable });
 export const deleteMenuItem = (id) => adminApi.delete(`/menu/items/${id}`);
 export const deleteCategory = (id) => adminApi.delete(`/menu/categories/${id}`);
 
 // --- Admin Rooms ---
-export const getRooms = (propertyId) => adminApi.get(`/rooms?propertyId=${propertyId}`);
-export const createRoom = (data) => adminApi.post('/rooms', data);
+export const getRooms = (propertyId) =>
+  adminApi.get(`/rooms?propertyId=${propertyId}`);
+export const createRoom = (data) => adminApi.post("/rooms", data);
 export const deleteRoom = (id) => adminApi.delete(`/rooms/${id}`);
 
 // --- Admin Team ---
-export const getTeamMembers = (propertyId) => adminApi.get(`/users/team${propertyId ? `?propertyId=${propertyId}` : ''}`);
-export const createTeamMember = (data) => adminApi.post('/users/team', data);
-export const updateTeamMember = (id, data) => adminApi.put(`/users/team/${id}`, data);
+export const getTeamMembers = (propertyId) =>
+  adminApi.get(`/users/team${propertyId ? `?propertyId=${propertyId}` : ""}`);
+export const createTeamMember = (data) => adminApi.post("/users/team", data);
+export const updateTeamMember = (id, data) =>
+  adminApi.put(`/users/team/${id}`, data);
 export const deleteTeamMember = (id) => adminApi.delete(`/users/team/${id}`);
 
 // --- Admin Properties ---
-export const getProperties = () => adminApi.get('/properties');
+export const getProperties = () => adminApi.get("/properties");
 
 export default api;

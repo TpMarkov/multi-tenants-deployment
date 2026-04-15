@@ -2,7 +2,8 @@ import express from 'express';
 import { 
   createOrder, 
   getOrders, 
-  updateOrderStatus 
+  updateOrderStatus,
+  deleteOrder 
 } from './order.controller.js';
 import { protect, authorize } from '../../middlewares/auth.js';
 
@@ -14,5 +15,8 @@ router.post('/', createOrder);
 // Protected routes for admin/staff
 router.get('/', protect, authorize('super_admin', 'property_admin', 'staff'), getOrders);
 router.patch('/:id/status', protect, authorize('super_admin', 'property_admin', 'staff'), updateOrderStatus);
+
+// Super admin only - delete order
+router.delete('/:id', protect, authorize('super_admin'), deleteOrder);
 
 export default router;

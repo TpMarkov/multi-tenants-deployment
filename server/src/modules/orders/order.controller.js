@@ -141,31 +141,66 @@ export const createOrder = asyncHandler(async (req, res, next) => {
   });
 });
 
-// @desc    Get all orders
+// @desc    Get all orders with filtering
 // @route   GET /api/v1/orders
 // @access  Private/Admin/Staff
 export const getOrders = asyncHandler(async (req, res, next) => {
   let propertyId;
+  const { status, startDate, endDate, page = 1, limit = 50 } = req.query;
 
+  // Super admin can see all properties, others only their property
   if (req.user.role === "super_admin") {
     propertyId = req.query.propertyId;
   } else {
     propertyId = req.user.propertyId;
   }
 
-  if (!propertyId) {
-    return res
-      .status(400)
-      .json({ success: false, error: "Property ID is required" });
+  if (!propertyId && req.user.role !== "super_admin") {
+    return res.status(400).json({ success: false, error: "Property ID is required" });
   }
 
-  const orders = await Order.find({ propertyId })
+  // Build query
+  const query = {};
+  
+  // For super admin without propertyId, don't filter by property (show all)
+  if (propertyId) {
+    query.propertyId = propertyId;
+  }
+  
+  // Filter by status
+  if (status && status !== 'all') {
+    query.status = status;
+  }
+  
+  // Filter by date range
+  if (startDate || endDate) {
+    query.createdAt = {};
+    if (startDate) {
+      query.createdAt.$gte = new Date(startDate);
+    }
+    if (endDate) {
+      query.createdAt.$lte = new Date(endDate);
+    }
+  }
+
+  const pageNum = parseInt(page);
+  const limitNum = parseInt(limit);
+  const skip = (pageNum - 1) * limitNum;
+
+  const orders = await Order.find(query)
     .populate("roomId", "roomNumber")
-    .sort("-createdAt");
+    .sort("-createdAt")
+    .skip(skip)
+    .limit(limitNum);
+
+  const total = await Order.countDocuments(query);
 
   res.status(200).json({
     success: true,
     count: orders.length,
+    total,
+    page: pageNum,
+    pages: Math.ceil(total / limitNum),
     data: orders,
   });
 });
@@ -206,5 +241,33 @@ export const updateOrderStatus = asyncHandler(async (req, res, next) => {
   res.status(200).json({
     success: true,
     data: order,
+  });
+});
+
+// @desc    Delete order
+// @route   DELETE /api/v1/orders/:id
+// @access  Private/SuperAdmin
+export const deleteOrder = asyncHandler(async (req, res, next) => {
+  // Only super admin can delete orders
+  if (req.user.role !== "super_admin") {
+    return res.status(403).json({ success: false, error: "Only super admin can delete orders" });
+  }
+
+  const order = await Order.findById(req.params.id);
+
+  if (!order) {
+    return res.status(404).json({ success: false, error: "Order not found" });
+  }
+
+  await Order.findByIdAndDelete(req.params.id);
+
+  await logAudit('ORDER_DELETED', req.user._id, order.propertyId, {
+    orderId: order._id,
+    roomId: order.roomId,
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Order deleted successfully",
   });
 });

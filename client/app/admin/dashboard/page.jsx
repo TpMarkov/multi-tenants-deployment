@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import TopBar from "@/components/layout/TopBar";
 import { useAdminStore } from "@/store/useAdminStore";
-import { getOrders } from "@/lib/api";
+import { getOrders, getAllOrders, deleteOrder, getProperties } from "@/lib/api";
 import {
   ShoppingBag,
   DollarSign,
@@ -11,6 +11,11 @@ import {
   Loader2,
   ChevronRight,
   ChevronLeft,
+  Filter,
+  Calendar,
+  X,
+  Trash2,
+  ChevronDown,
 } from "lucide-react";
 
 const STATUS_COLORS = {
@@ -27,21 +32,63 @@ export default function DashboardPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
 
+  const isSuperAdmin = user?.role === "super_admin";
+  const [showAllOrders, setShowAllOrders] = useState(false);
+  const [properties, setProperties] = useState([]);
+  const [statusFilter, setStatusFilter] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [propertyFilter, setPropertyFilter] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+
   const pid = propertyId || process.env.NEXT_PUBLIC_DEFAULT_PROPERTY_ID;
 
   useEffect(() => {
+    const fetchProperties = async () => {
+      if (isSuperAdmin) {
+        try {
+          const res = await getProperties();
+          setProperties(res.data.data || []);
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    };
+    fetchProperties();
+  }, [isSuperAdmin]);
+
+  useEffect(() => {
     const fetchDashboard = async () => {
+      setLoading(true);
       try {
-        const res = await getOrders(pid);
-        setOrders(res.data.data || []);
+        if (isSuperAdmin && showAllOrders) {
+          const params = {};
+          if (statusFilter) params.status = statusFilter;
+          if (dateFrom) params.dateFrom = dateFrom;
+          if (dateTo) params.dateTo = dateTo;
+          if (propertyFilter) params.propertyId = propertyFilter;
+          const res = await getAllOrders(params);
+          setOrders(res.data.data || []);
+        } else {
+          const res = await getOrders(pid);
+          setOrders(res.data.data || []);
+        }
       } catch (err) {
         console.error(err);
       } finally {
         setLoading(false);
       }
     };
-    if (pid) fetchDashboard();
-  }, [pid]);
+    if (pid || (isSuperAdmin && showAllOrders)) fetchDashboard();
+  }, [
+    pid,
+    isSuperAdmin,
+    showAllOrders,
+    statusFilter,
+    dateFrom,
+    dateTo,
+    propertyFilter,
+  ]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -91,6 +138,16 @@ export default function DashboardPage() {
     },
   ];
 
+  const handleDeleteOrder = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this order?")) return;
+    try {
+      await deleteOrder(id);
+      setOrders((prev) => prev.filter((o) => o._id !== id));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <>
       <TopBar title="Overview" />
@@ -107,7 +164,128 @@ export default function DashboardPage() {
               <span className="text-[#1e88e5]">Dashboard</span>
             </div>
           </div>
+          {isSuperAdmin && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  setShowAllOrders(!showAllOrders);
+                  setShowFilters(!showAllOrders);
+                }}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${
+                  showAllOrders
+                    ? "bg-[#1e88e5] text-white border-[#1e88e5]"
+                    : "bg-white text-[#455a64] border-slate-300 hover:bg-slate-50"
+                }`}
+              >
+                {showAllOrders ? "My Property" : "All Properties"}
+              </button>
+              {showAllOrders && (
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="p-1.5 rounded-md border border-slate-300 hover:bg-slate-50 text-[#455a64]"
+                >
+                  <Filter className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          )}
         </div>
+
+        {/* Filters Panel */}
+        {isSuperAdmin && showAllOrders && showFilters && (
+          <div className="mb-3 md:mb-4 p-3 bg-white rounded-md shadow-sm border border-slate-200">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-[#455a64]">
+                Filters
+              </span>
+              <button
+                onClick={() => setShowFilters(false)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <div>
+                <label className="text-xs text-[#67757c] block mb-1">
+                  Property
+                </label>
+                <select
+                  value={propertyFilter}
+                  onChange={(e) => setPropertyFilter(e.target.value)}
+                  className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-md hover:border-slate-300"
+                >
+                  <option value="">All Properties</option>
+                  {properties.map((p) => (
+                    <option key={p._id} value={p._id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-[#67757c] block mb-1">
+                  Status
+                </label>
+                <div className="relative">
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-md hover:border-slate-300 appearance-none pr-6"
+                  >
+                    <option value="">All Statuses</option>
+                    <option value="received">Received</option>
+                    <option value="preparing">Preparing</option>
+                    <option value="dispatched">Dispatched</option>
+                    <option value="delivered">Delivered</option>
+                  </select>
+                  <ChevronDown className="h-3 w-3 absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-[#67757c] block mb-1">
+                  From
+                </label>
+                <div className="relative">
+                  <input
+                    type="date"
+                    value={dateFrom}
+                    onChange={(e) => setDateFrom(e.target.value)}
+                    className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-md hover:border-slate-300"
+                  />
+                  <Calendar className="h-3 w-3 absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-[#67757c] block mb-1">To</label>
+                <div className="relative">
+                  <input
+                    type="date"
+                    value={dateTo}
+                    onChange={(e) => setDateTo(e.target.value)}
+                    className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-md hover:border-slate-300"
+                  />
+                  <Calendar className="h-3 w-3 absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                </div>
+              </div>
+            </div>
+            {(statusFilter || dateFrom || dateTo || propertyFilter) && (
+              <div className="mt-2 flex justify-end">
+                <button
+                  onClick={() => {
+                    setStatusFilter("");
+                    setDateFrom("");
+                    setDateTo("");
+                    setPropertyFilter("");
+                  }}
+                  className="text-xs text-[#1e88e5] hover:underline flex items-center gap-1"
+                >
+                  <X className="h-3 w-3" /> Clear Filters
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         {loading ? (
           <div className="flex items-center justify-center flex-1">
@@ -159,6 +337,11 @@ export default function DashboardPage() {
                   <table className="w-full text-sm">
                     <thead className="sticky top-0 bg-white">
                       <tr className="text-left text-[#455a64] font-semibold border-b border-[#f3f3f3]">
+                        {isSuperAdmin && showAllOrders && (
+                          <th className="px-3 md:px-4 py-2 hidden lg:table-cell">
+                            Property
+                          </th>
+                        )}
                         <th className="px-3 md:px-4 py-2">Room</th>
                         <th className="px-3 md:px-4 py-2 hidden sm:table-cell">
                           Items
@@ -170,6 +353,9 @@ export default function DashboardPage() {
                         <th className="px-3 md:px-4 py-2 hidden md:table-cell">
                           Time
                         </th>
+                        {isSuperAdmin && showAllOrders && (
+                          <th className="px-3 md:px-4 py-2">Action</th>
+                        )}
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#f3f3f3]">
@@ -178,6 +364,13 @@ export default function DashboardPage() {
                           key={order._id}
                           className="hover:bg-[#f2f4f8] transition-colors"
                         >
+                          {isSuperAdmin && showAllOrders && (
+                            <td className="px-3 md:px-4 py-2 md:py-3 hidden lg:table-cell">
+                              <span className="text-[#455a64] text-xs font-medium">
+                                {order.propertyId?.name || "Unknown"}
+                              </span>
+                            </td>
+                          )}
                           <td className="px-3 md:px-4 py-2 md:py-3">
                             <div className="flex items-center gap-2">
                               <div className="bg-[#eef5f9] h-6 w-6 rounded-full flex items-center justify-center text-[#1e88e5] font-bold text-[9px]">
@@ -217,6 +410,16 @@ export default function DashboardPage() {
                               )}
                             </p>
                           </td>
+                          {isSuperAdmin && showAllOrders && (
+                            <td className="px-3 md:px-4 py-2 md:py-3">
+                              <button
+                                onClick={() => handleDeleteOrder(order._id)}
+                                className="p-1 text-red-500 hover:bg-red-50 rounded"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </td>
+                          )}
                         </tr>
                       ))}
                     </tbody>
