@@ -49,3 +49,46 @@ export const createUser = asyncHandler(async (req, res, next) => {
     data: user
   });
 });
+
+// @desc    Get current user profile
+// @route   GET /api/v1/users/profile
+// @access  Private
+export const getProfile = asyncHandler(async (req, res, next) => {
+  const user = await User.findById(req.user.id);
+
+  res.status(200).json({
+    success: true,
+    data: user
+  });
+});
+
+// @desc    Update current user profile
+// @route   PUT /api/v1/users/profile
+// @access  Private
+export const updateProfile = asyncHandler(async (req, res, next) => {
+  const { name, email } = req.body;
+
+  // Build update object
+  const updateFields = {};
+  if (name) updateFields.name = name;
+  if (email) updateFields.email = email;
+
+  // Check if email is already taken by another user
+  if (email) {
+    const existingUser = await User.findOne({ email, _id: { $ne: req.user.id } });
+    if (existingUser) {
+      return res.status(400).json({ success: false, error: 'Email already in use' });
+    }
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.user.id,
+    updateFields,
+    { new: true, runValidators: true }
+  );
+
+  res.status(200).json({
+    success: true,
+    data: user
+  });
+});

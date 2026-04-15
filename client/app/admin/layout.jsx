@@ -37,7 +37,7 @@ export default function AdminLayout({ children }) {
   if (!isAuthenticated) return null;
 
   return (
-    <div className="flex min-h-screen bg-[#eef5f9]">
+    <div className="flex h-screen bg-[#eef5f9] overflow-hidden">
       <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
       
       {/* Mobile overlay */}
@@ -56,7 +56,7 @@ export default function AdminLayout({ children }) {
         <Sidebar onClose={() => setSidebarOpen(false)} />
       </div>
       
-      <main className="flex-1 flex flex-col min-h-screen overflow-x-hidden">
+      <main className="flex-1 flex flex-col overflow-hidden">
         {/* Mobile header with hamburger */}
         <header className="lg:hidden h-14 bg-[#1e88e5] text-white flex items-center justify-between px-4 flex-shrink-0 sticky top-0 z-20">
           <button 
