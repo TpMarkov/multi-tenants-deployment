@@ -274,3 +274,156 @@ export const deleteOrder = asyncHandler(async (req, res, next) => {
     message: "Order deleted successfully",
   });
 });
+
+// @desc    Get order analytics
+// @route   GET /api/v1/orders/analytics
+// @access  Private/Admin
+export const getOrderAnalytics = asyncHandler(async (req, res, next) => {
+  const { startDate, endDate, propertyId } = req.query;
+  
+  console.log("📊 [Analytics] Query params:", { startDate, endDate, propertyId });
+  console.log("📊 [Analytics] User role:", req.user.role);
+  console.log("📊 [Analytics] User propertyId:", req.user.propertyId);
+  
+  // Build base query - allow empty query for super admin to get all orders
+  const query = {};
+
+  if (req.user.role !== "super_admin") {
+    // Non-super admins can only see their property's orders
+    if (req.user.propertyId) {
+      query.propertyId = new mongoose.Types.ObjectId(req.user.propertyId);
+    }
+  } else if (propertyId && propertyId !== '') {
+    // Super admin with specific property
+    query.propertyId = new mongoose.Types.ObjectId(propertyId);
+  }
+  // For super admin with no propertyId, query remains empty (all properties)
+  
+  // Date range filter
+  if (startDate || endDate) {
+    query.createdAt = {};
+    if (startDate) query.createdAt.$gte = new Date(startDate + 'T00:00:00.000Z');
+    if (endDate) query.createdAt.$lte = new Date(endDate + 'T23:59:59.999Z');
+  }
+  
+  console.log("📊 [Analytics] Final query:", JSON.stringify(query));
+
+  // Revenue analytics
+  const revenueByDate = await Order.aggregate([
+    { $match: query },
+    {
+      $group: {
+        _id: {
+          $dateToString: { format: "%Y-%m-%d", date: "$createdAt" }
+        },
+        totalRevenue: { $sum: "$totalAmount" },
+        orderCount: { $sum: 1 }
+      }
+    },
+    { $sort: { _id: 1 } }
+  ]);
+  console.log("📊 [Analytics] Revenue by date:", revenueByDate);
+
+  // Status breakdown
+  const statusBreakdown = await Order.aggregate([
+    { $match: query },
+    {
+      $group: {
+        _id: "$status",
+        count: { $sum: 1 }
+      }
+    }
+  ]);
+  console.log("📊 [Analytics] Status breakdown:", statusBreakdown);
+
+  // Peak hours
+  const peakHours = await Order.aggregate([
+    { $match: query },
+    {
+      $group: {
+        _id: { $hour: "$createdAt" },
+        count: { $sum: 1 }
+      }
+    },
+    { $sort: { count: -1 } },
+    { $limit: 10 }
+  ]);
+  console.log("📊 [Analytics] Peak hours:", peakHours);
+
+  // Top selling items
+  const topItems = await Order.aggregate([
+    { $match: query },
+    { $unwind: "$items" },
+    {
+      $group: {
+        _id: "$items.name",
+        totalSold: { $sum: "$items.quantity" },
+        totalRevenue: { $sum: { $multiply: ["$items.price", "$items.quantity"] } }
+      }
+    },
+    { $sort: { totalSold: -1 } },
+    { $limit: 10 }
+  ]);
+  console.log("📊 [Analytics] Top items:", topItems);
+
+  // Summary stats
+  const summary = await Order.aggregate([
+    { $match: query },
+    {
+      $group: {
+        _id: null,
+        totalRevenue: { $sum: "$totalAmount" },
+        totalOrders: { $sum: 1 },
+        avgOrderValue: { $avg: "$totalAmount" }
+      }
+    }
+  ]);
+  console.log("📊 [Analytics] Summary:", summary);
+
+  // Today's stats
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayQuery = { ...query, createdAt: { $gte: today } };
+  
+  const todayStats = await Order.aggregate([
+    { $match: todayQuery },
+    {
+      $group: {
+        _id: null,
+        todayRevenue: { $sum: "$totalAmount" },
+        todayOrders: { $sum: 1 }
+      }
+    }
+  ]);
+  console.log("📊 [Analytics] Today stats:", todayStats);
+
+  // Yesterday's stats for comparison
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayQuery = { ...query, createdAt: { $gte: yesterday, $lt: today } };
+  
+  const yesterdayStats = await Order.aggregate([
+    { $match: yesterdayQuery },
+    {
+      $group: {
+        _id: null,
+        yesterdayRevenue: { $sum: "$totalAmount" },
+        yesterdayOrders: { $sum: 1 }
+      }
+    }
+  ]);
+  console.log("📊 [Analytics] Yesterday stats:", yesterdayStats);
+
+  res.status(200).json({
+    success: true,
+    data: {
+      summary: summary[0] || { totalRevenue: 0, totalOrders: 0, avgOrderValue: 0 },
+      todayStats: todayStats[0] || { todayRevenue: 0, todayOrders: 0 },
+      yesterdayStats: yesterdayStats[0] || { yesterdayRevenue: 0, yesterdayOrders: 0 },
+      revenueByDate,
+      statusBreakdown,
+      peakHours,
+      topItems
+    }
+  });
+});

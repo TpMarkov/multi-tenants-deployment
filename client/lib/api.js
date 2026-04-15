@@ -62,6 +62,10 @@ export const getAllOrders = (params) => {
   const queryString = new URLSearchParams(params).toString();
   return adminApi.get(`/orders?${queryString}`);
 };
+export const getOrderAnalytics = (params) => {
+  const queryString = new URLSearchParams(params).toString();
+  return adminApi.get(`/orders/analytics?${queryString}`);
+};
 
 // --- Admin Menu ---
 export const createCategory = (data) => adminApi.post("/menu/categories", data);

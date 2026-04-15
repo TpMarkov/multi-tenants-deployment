@@ -23,7 +23,9 @@ import {
   X,
   Trash2,
   ChevronDown,
+  BarChart3,
 } from "lucide-react";
+import Analytics from "@/components/dashboard/Analytics";
 
 const STATUS_COLORS = {
   received: "bg-blue-100 text-blue-700",
@@ -48,6 +50,7 @@ export default function DashboardPage() {
   const [dateTo, setDateTo] = useState("");
   const [propertyFilter, setPropertyFilter] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [activeView, setActiveView] = useState("overview");
 
   const pid = propertyId || process.env.NEXT_PUBLIC_DEFAULT_PROPERTY_ID;
 
@@ -238,6 +241,29 @@ export default function DashboardPage() {
                   <Filter className="h-4 w-4" />
                 </button>
               )}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setActiveView("overview")}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${
+                    activeView === "overview"
+                      ? "bg-[#1e88e5] text-white border-[#1e88e5]"
+                      : "bg-white text-[#455a64] border-slate-300 hover:bg-slate-50"
+                  }`}
+                >
+                  Overview
+                </button>
+                <button
+                  onClick={() => setActiveView("analytics")}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md border transition-colors flex items-center gap-1 ${
+                    activeView === "analytics"
+                      ? "bg-[#1e88e5] text-white border-[#1e88e5]"
+                      : "bg-white text-[#455a64] border-slate-300 hover:bg-slate-50"
+                  }`}
+                >
+                  <BarChart3 className="h-3 w-3" />
+                  Analytics
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -337,6 +363,8 @@ export default function DashboardPage() {
           <div className="flex items-center justify-center flex-1">
             <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
           </div>
+        ) : activeView === "analytics" ? (
+          <Analytics />
         ) : (
           <div className="flex flex-col flex-1 overflow-hidden">
             {/* Stats */}
