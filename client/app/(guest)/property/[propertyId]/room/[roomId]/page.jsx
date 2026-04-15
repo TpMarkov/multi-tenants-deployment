@@ -27,12 +27,14 @@ export default function MenuPage() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [initializing, setInitializing] = useState(true);
 
   useEffect(() => {
     // First check URL params
     if (paramPropertyId && paramRoomId) {
       setPropertyId(paramPropertyId);
       setRoomId(paramRoomId);
+      setInitializing(false);
       return;
     }
 
@@ -44,6 +46,7 @@ export default function MenuPage() {
       setPropertyId(storedPropertyId);
       setRoomId(storedRoomId);
     }
+    setInitializing(false);
   }, [paramPropertyId, paramRoomId]);
 
   useEffect(() => {
@@ -51,16 +54,12 @@ export default function MenuPage() {
     if (propertyId && roomId) {
       setSession(propertyId, roomId);
       fetchData();
-    } else if (!paramPropertyId && !paramRoomId) {
-      // Only show error if no params and no stored values (after hydration)
-      setTimeout(() => {
-        if (!propertyId && !roomId) {
-          setError("Please scan a valid QR code to view the menu.");
-          setLoading(false);
-        }
-      }, 100);
+    } else if (!initializing && !paramPropertyId && !paramRoomId) {
+      // Only show error if not initializing AND no params AND no stored values
+      setError("Please scan a valid QR code to view the menu.");
+      setLoading(false);
     }
-  }, [propertyId, roomId, paramPropertyId, paramRoomId]);
+  }, [propertyId, roomId, paramPropertyId, paramRoomId, initializing]);
 
   const fetchData = async () => {
     try {
@@ -79,7 +78,7 @@ export default function MenuPage() {
     }
   };
 
-  if (loading) {
+  if (loading || initializing) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
