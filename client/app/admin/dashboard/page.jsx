@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import TopBar from "@/components/layout/TopBar";
 import { useAdminStore } from "@/store/useAdminStore";
+import { useNotificationStore } from "@/store/useNotificationStore";
 import {
   getOrders,
   updateOrderStatus,
@@ -33,6 +34,7 @@ const STATUS_COLORS = {
 
 export default function DashboardPage() {
   const { user, propertyId } = useAdminStore();
+  const { lastViewedAt, setLastViewed } = useNotificationStore();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -110,10 +112,20 @@ export default function DashboardPage() {
   }, [itemsPerPage]);
 
   const today = new Date().toDateString();
-  const todayOrders = orders.filter(
+  const todayOrders = orders.filter((o) => {
+    const orderDate = new Date(o.createdAt).toDateString();
+    const isToday = orderDate === today;
+    const isNew =
+      !lastViewedAt || new Date(o.createdAt) > new Date(lastViewedAt);
+    return isToday && isNew;
+  });
+  const totalTodayOrders = orders.filter(
     (o) => new Date(o.createdAt).toDateString() === today,
   );
-  const revenue = todayOrders.reduce((acc, o) => acc + (o.totalAmount || 0), 0);
+  const revenue = totalTodayOrders.reduce(
+    (acc, o) => acc + (o.totalAmount || 0),
+    0,
+  );
   const activeOrders = orders.filter((o) =>
     ["received", "preparing", "dispatched"].includes(o.status),
   );
@@ -128,10 +140,16 @@ export default function DashboardPage() {
 
   const stats = [
     {
-      label: "Today's Orders",
+      label: "New Orders",
       value: todayOrders.length,
       icon: ShoppingBag,
       color: "bg-[#1e88e5]",
+    },
+    {
+      label: "Total Today",
+      value: totalTodayOrders.length,
+      icon: ShoppingBag,
+      color: "bg-[#7460ee]",
     },
     {
       label: "Today's Revenue",

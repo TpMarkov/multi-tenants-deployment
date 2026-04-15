@@ -8,6 +8,7 @@ export const useNotificationStore = create(
       notifications: [],
       unreadCount: 0,
       soundEnabled: true,
+      lastViewedAt: null,
 
       addNotification: (notification) => {
         const newNotification = {
@@ -45,7 +46,12 @@ export const useNotificationStore = create(
         set((state) => ({
           notifications: state.notifications.map(n => ({ ...n, read: true })),
           unreadCount: 0,
+          lastViewedAt: new Date().toISOString(),
         }));
+      },
+
+      setLastViewed: () => {
+        set({ lastViewedAt: new Date().toISOString() });
       },
 
       clearNotifications: () => {
@@ -84,6 +90,7 @@ export const useNotificationStore = create(
       partialize: (state) => ({
         notifications: state.notifications,
         soundEnabled: state.soundEnabled,
+        lastViewedAt: state.lastViewedAt,
       }),
     }
   )

@@ -1,14 +1,24 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Bell, Search, X, Volume2, VolumeX } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useAdminStore } from "@/store/useAdminStore";
 import { useNotificationStore } from "@/store/useNotificationStore";
 import { getSocket } from "@/lib/socket";
 
 export default function TopBar({ title }) {
   const { user } = useAdminStore();
+  const router = useRouter();
   const { notifications, unreadCount, markAsRead, markAllAsRead, soundEnabled, toggleSound } = useNotificationStore();
   const [showDropdown, setShowDropdown] = useState(false);
+
+  const handleNotificationClick = (notification) => {
+    markAsRead(notification.id);
+    if (notification.orderId) {
+      router.push(`/admin/orders?orderId=${notification.orderId}`);
+    }
+    setShowDropdown(false);
+  };
 
   useEffect(() => {
     const socket = getSocket();
@@ -93,7 +103,7 @@ export default function TopBar({ title }) {
                   notifications.map((notification) => (
                     <div
                       key={notification.id}
-                      onClick={() => markAsRead(notification.id)}
+                      onClick={() => handleNotificationClick(notification)}
                       className={`p-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
                         !notification.read ? 'bg-blue-50' : ''
                       }`}
