@@ -29,6 +29,14 @@ export default function MenuPage() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    // First check URL params
+    if (paramPropertyId && paramRoomId) {
+      setPropertyId(paramPropertyId);
+      setRoomId(paramRoomId);
+      return;
+    }
+
+    // Then check cookies
     const storedPropertyId = getCookie("propertyId");
     const storedRoomId = getCookie("roomId");
 
@@ -36,24 +44,30 @@ export default function MenuPage() {
       setPropertyId(storedPropertyId);
       setRoomId(storedRoomId);
     }
-  }, []);
+  }, [paramPropertyId, paramRoomId]);
 
   useEffect(() => {
+    // Only proceed if we have both propertyId and roomId from any source
     if (propertyId && roomId) {
       setSession(propertyId, roomId);
       fetchData();
     } else if (!paramPropertyId && !paramRoomId) {
-      setError("Please scan a valid QR code to view the menu.");
-      setLoading(false);
+      // Only show error if no params and no stored values (after hydration)
+      setTimeout(() => {
+        if (!propertyId && !roomId) {
+          setError("Please scan a valid QR code to view the menu.");
+          setLoading(false);
+        }
+      }, 100);
     }
-  }, [propertyId, roomId]);
+  }, [propertyId, roomId, paramPropertyId, paramRoomId]);
 
   const fetchData = async () => {
     try {
       setLoading(true);
       const [catRes, itemRes] = await Promise.all([
         getCategories(propertyId),
-        getMenuItems(propertyId)
+        getMenuItems(propertyId),
       ]);
       setCategories(catRes.data.data);
       setItems(itemRes.data.data);
@@ -90,26 +104,33 @@ export default function MenuPage() {
   return (
     <div className="pb-24">
       <header className="bg-white p-4 sticky top-0 z-10 border-b">
-        <h1 className="text-xl font-bold text-slate-900 leading-tight">Room Dining</h1>
+        <h1 className="text-xl font-bold text-slate-900 leading-tight">
+          Room Dining
+        </h1>
         <p className="text-sm text-slate-500">Room {roomId}</p>
       </header>
 
       <CategoryNav categories={categories} />
 
       <div className="p-4 space-y-8">
-        {categories.map(category => (
+        {categories.map((category) => (
           <MenuList
             key={category._id}
             category={category}
-            items={items.filter(item => item.categoryId && (item.categoryId._id === category._id || item.categoryId === category._id))}
+            items={items.filter(
+              (item) =>
+                item.categoryId &&
+                (item.categoryId._id === category._id ||
+                  item.categoryId === category._id),
+            )}
           />
         ))}
 
-        {items.filter(item => !item.categoryId).length > 0 && (
-           <MenuList
-             category={{ _id: 'uncategorized', name: 'Other Options' }}
-             items={items.filter(item => !item.categoryId)}
-           />
+        {items.filter((item) => !item.categoryId).length > 0 && (
+          <MenuList
+            category={{ _id: "uncategorized", name: "Other Options" }}
+            items={items.filter((item) => !item.categoryId)}
+          />
         )}
       </div>
 
