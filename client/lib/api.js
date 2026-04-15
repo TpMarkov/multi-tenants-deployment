@@ -64,4 +64,13 @@ export const getRooms = (propertyId) => adminApi.get(`/rooms?propertyId=${proper
 export const createRoom = (data) => adminApi.post('/rooms', data);
 export const deleteRoom = (id) => adminApi.delete(`/rooms/${id}`);
 
+// --- Admin Team ---
+export const getTeamMembers = (propertyId) => adminApi.get(`/users/team${propertyId ? `?propertyId=${propertyId}` : ''}`);
+export const createTeamMember = (data) => adminApi.post('/users/team', data);
+export const updateTeamMember = (id, data) => adminApi.put(`/users/team/${id}`, data);
+export const deleteTeamMember = (id) => adminApi.delete(`/users/team/${id}`);
+
+// --- Admin Properties ---
+export const getProperties = () => adminApi.get('/properties');
+
 export default api;

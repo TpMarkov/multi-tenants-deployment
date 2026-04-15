@@ -113,7 +113,7 @@ function QRModal({ room, propertyId, onClose }) {
 }
 
 export default function RoomsPage() {
-  const { propertyId } = useAdminStore();
+  const { propertyId, user } = useAdminStore();
   const pid = propertyId || process.env.NEXT_PUBLIC_DEFAULT_PROPERTY_ID;
 
   const [rooms, setRooms] = useState([]);
@@ -124,6 +124,9 @@ export default function RoomsPage() {
   const [saving, setSaving] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  // Super admin can add/delete rooms, property admin and staff can only view
+const canManageRooms = user?.role === 'super_admin';
 
   useEffect(() => {
     const fetch = async () => {
@@ -218,14 +221,16 @@ export default function RoomsPage() {
           <p className="text-[#67757c] text-sm">
             {rooms.length} room{rooms.length !== 1 ? "s" : ""} configured
           </p>
-          <button
-            onClick={() => setShowModal(true)}
-            className="flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-2.5 bg-[#1e88e5] text-white rounded text-sm font-medium hover:bg-[#1976d2] transition-all"
-          >
-            <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">Add Room</span>
-            <span className="sm:hidden">Add</span>
-          </button>
+          {canManageRooms && (
+            <button
+              onClick={() => setShowModal(true)}
+              className="flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-2.5 bg-[#1e88e5] text-white rounded text-sm font-medium hover:bg-[#1976d2] transition-all"
+            >
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline">Add Room</span>
+              <span className="sm:hidden">Add</span>
+            </button>
+          )}
         </div>
 
         <div className="bg-white rounded-md shadow-sm overflow-hidden flex flex-col flex-1 min-h-0">
@@ -304,15 +309,17 @@ export default function RoomsPage() {
                             <QrCode className="h-3 w-3 md:h-4 md:w-4" />
                             <span className="hidden sm:inline">QR</span>
                           </button>
-                          <button
-                            onClick={() =>
-                              handleDeleteRoom(room._id, room.roomNumber)
-                            }
-                            className="flex items-center gap-1 text-red-600 hover:text-red-700 font-medium text-xs transition-colors px-2 py-1.5"
-                          >
-                            <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
-                            <span className="hidden sm:inline">Delete</span>
-                          </button>
+                          {canManageRooms && (
+                            <button
+                              onClick={() =>
+                                handleDeleteRoom(room._id, room.roomNumber)
+                              }
+                              className="flex items-center gap-1 text-red-600 hover:text-red-700 font-medium text-xs transition-colors px-2 py-1.5"
+                            >
+                              <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
+                              <span className="hidden sm:inline">Delete</span>
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>

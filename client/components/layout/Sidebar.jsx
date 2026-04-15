@@ -1,30 +1,37 @@
-'use client';
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { useAdminStore } from '@/store/useAdminStore';
-import { disconnectSocket } from '@/lib/socket';
+"use client";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useAdminStore } from "@/store/useAdminStore";
+import { disconnectSocket } from "@/lib/socket";
 import {
-  LayoutDashboard, ShoppingBag, UtensilsCrossed,
-  DoorOpen, Settings, LogOut, X
-} from 'lucide-react';
+  LayoutDashboard,
+  ShoppingBag,
+  UtensilsCrossed,
+  DoorOpen,
+  Settings,
+  LogOut,
+  X,
+} from "lucide-react";
 
 const navItems = [
-  { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/orders',    label: 'Orders',    icon: ShoppingBag },
-  { href: '/admin/menu',      label: 'Menu',      icon: UtensilsCrossed },
-  { href: '/admin/rooms',     label: 'Rooms',     icon: DoorOpen },
-  { href: '/admin/settings',  label: 'Settings',  icon: Settings },
+  { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
+  { href: "/admin/menu", label: "Menu", icon: UtensilsCrossed },
+  { href: "/admin/rooms", label: "Rooms", icon: DoorOpen },
+  { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
 export default function Sidebar({ onClose }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAdminStore();
+  const canAccessSettings =
+    !user?.permissions?.noSettings && user?.role !== "staff";
 
   const handleLogout = () => {
     disconnectSocket();
     logout();
-    router.push('/admin/login');
+    router.push("/admin/login");
   };
 
   return (
@@ -32,7 +39,10 @@ export default function Sidebar({ onClose }) {
       {/* Mobile close button */}
       {onClose && (
         <div className="lg:hidden flex justify-end p-2">
-          <button onClick={onClose} className="p-2 hover:bg-[#27333e] rounded-lg transition-colors">
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-[#27333e] rounded-lg transition-colors"
+          >
             <X className="h-5 w-5 text-white" />
           </button>
         </div>
@@ -42,13 +52,16 @@ export default function Sidebar({ onClose }) {
       <div className="h-16 flex items-center px-6 bg-[#1e88e5] text-white">
         <div className="flex items-center gap-3">
           <UtensilsCrossed className="h-6 w-6" />
-          <span className="font-bold text-lg tracking-tight">HospitalityOS</span>
+          <span className="font-bold text-lg tracking-tight">
+            HospitalityOS
+          </span>
         </div>
       </div>
 
       {/* Nav */}
       <nav className="py-6 flex-1 space-y-1">
         {navItems.map(({ href, label, icon: Icon }) => {
+          if (href === "/admin/settings" && !canAccessSettings) return null;
           const active = pathname.startsWith(href);
           return (
             <Link
@@ -57,8 +70,8 @@ export default function Sidebar({ onClose }) {
               onClick={onClose}
               className={`flex items-center gap-3 px-6 py-3 text-sm font-normal transition-all duration-200 border-l-4 border-transparent ${
                 active
-                  ? 'text-white bg-[#27333e] border-[#1e88e5]'
-                  : 'hover:text-white hover:bg-[#27333e]'
+                  ? "text-white bg-[#27333e] border-[#1e88e5]"
+                  : "hover:text-white hover:bg-[#27333e]"
               }`}
             >
               <Icon className="h-5 w-5" />
@@ -73,14 +86,22 @@ export default function Sidebar({ onClose }) {
         <div className="flex items-center gap-3 mb-4">
           <div className="h-10 w-10 rounded-full bg-[#1e88e5] flex items-center justify-center text-white font-bold overflow-hidden">
             {user?.avatar ? (
-              <img src={user.avatar} alt="Profile" className="w-full h-full object-cover" />
+              <img
+                src={user.avatar}
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
             ) : (
-              user?.name?.[0] || 'A'
+              user?.name?.[0] || "A"
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-white text-sm font-medium truncate">{user?.name || 'Admin'}</p>
-            <p className="text-[#a6b7bf] text-xs">{user?.role?.replace('_', ' ')}</p>
+            <p className="text-white text-sm font-medium truncate">
+              {user?.name || "Admin"}
+            </p>
+            <p className="text-[#a6b7bf] text-xs">
+              {user?.role?.replace("_", " ")}
+            </p>
           </div>
         </div>
         <button

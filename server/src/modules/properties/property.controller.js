@@ -3,9 +3,17 @@ import Property from './property.model.js';
 
 // @desc    Get all properties
 // @route   GET /api/v1/properties
-// @access  Private/SuperAdmin
+// @access  Private/SuperAdmin, PropertyAdmin
 export const getProperties = asyncHandler(async (req, res, next) => {
-  const properties = await Property.find();
+  let properties;
+  
+  if (req.user.role === 'super_admin') {
+    // Super admin can see all properties
+    properties = await Property.find();
+  } else {
+    // Property admin can only see their own property
+    properties = await Property.find({ _id: req.user.propertyId });
+  }
 
   res.status(200).json({
     success: true,

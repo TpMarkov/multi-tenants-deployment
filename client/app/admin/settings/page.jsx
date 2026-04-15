@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useAdminStore } from "@/store/useAdminStore";
-import { adminApi } from "@/lib/api";
+import { adminApi, getProperties, updateTeamMember } from "@/lib/api";
 import toast from "react-hot-toast";
 import {
   User,
@@ -13,6 +13,11 @@ import {
   Camera,
   Eye,
   EyeOff,
+  Users,
+  Trash2,
+  UserPlus,
+  X,
+  Pencil,
 } from "lucide-react";
 
 export default function SettingsPage() {
@@ -44,6 +49,124 @@ export default function SettingsPage() {
   });
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
+  // Team management state
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [isLoadingTeam, setIsLoadingTeam] = useState(false);
+  const [showAddMember, setShowAddMember] = useState(false);
+  const [showEditMember, setShowEditMember] = useState(false);
+  const [editingMember, setEditingMember] = useState(null);
+  const [newMember, setNewMember] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "staff",
+    propertyId: "",
+  });
+
+  const [properties, setProperties] = useState([]);
+
+  const fetchTeamMembers = async () => {
+    setIsLoadingTeam(true);
+    try {
+      const res = await adminApi.get("/users/team");
+      if (res.data?.data) {
+        setTeamMembers(res.data.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch team members:", error);
+    } finally {
+      setIsLoadingTeam(false);
+    }
+  };
+
+  const handleCreateTeamMember = async () => {
+    if (!newMember.name || !newMember.email || !newMember.password) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    if (
+      (newMember.role === "property_admin" || newMember.role === "staff") &&
+      !newMember.propertyId
+    ) {
+      toast.error("Please select a property");
+      return;
+    }
+
+    const payload = {
+      name: newMember.name,
+      email: newMember.email,
+      password: newMember.password,
+      role: newMember.role,
+    };
+
+    if (newMember.role !== "super_admin" && newMember.propertyId) {
+      payload.propertyId = newMember.propertyId;
+    }
+
+    try {
+      const res = await adminApi.post("/users/team", payload);
+      if (res.data.success) {
+        toast.success("Team member added successfully");
+        setShowAddMember(false);
+        setNewMember({
+          name: "",
+          email: "",
+          password: "",
+          role: "staff",
+          propertyId: "",
+        });
+        fetchTeamMembers();
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.error || "Failed to add team member");
+    }
+  };
+
+  const handleDeleteTeamMember = async (userId) => {
+    if (!confirm("Are you sure you want to remove this team member?")) return;
+
+    try {
+      const res = await adminApi.delete(`/users/team/${userId}`);
+      if (res.data.success) {
+        toast.success("Team member removed");
+        fetchTeamMembers();
+      }
+    } catch (error) {
+      toast.error(
+        error.response?.data?.error || "Failed to remove team member",
+      );
+    }
+  };
+
+  const handleEditTeamMember = async () => {
+    if (!editingMember) return;
+
+    const payload = {
+      name: editingMember.name,
+      role: editingMember.role,
+    };
+
+    if (editingMember.role !== "super_admin" && editingMember.propertyId) {
+      payload.propertyId = editingMember.propertyId;
+    }
+
+    try {
+      const res = await updateTeamMember(editingMember._id, payload);
+      if (res.data.success) {
+        toast.success("Team member updated successfully");
+        setShowEditMember(false);
+        setEditingMember(null);
+        fetchTeamMembers();
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.error || "Failed to update team member");
+    }
+  };
+
+  const canManageTeam =
+    user?.permissions?.canManageTeam || user?.role === "super_admin";
+
   const handlePasswordChange = (e) => {
     const { name, value } = e.target;
     setPasswordData((prev) => ({ ...prev, [name]: value }));
@@ -54,7 +177,11 @@ export default function SettingsPage() {
   };
 
   const handleUpdatePassword = async () => {
-    if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+    if (
+      !passwordData.currentPassword ||
+      !passwordData.newPassword ||
+      !passwordData.confirmPassword
+    ) {
       toast.error("Please fill in all fields");
       return;
     }
@@ -75,7 +202,11 @@ export default function SettingsPage() {
       });
       if (res.data.success) {
         toast.success("Password updated successfully");
-        setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+        setPasswordData({
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
       }
     } catch (error) {
       toast.error(error.response?.data?.error || "Failed to update password");
@@ -100,7 +231,7 @@ export default function SettingsPage() {
           // Update avatar in store if it exists
           if (avatar) {
             useAdminStore.setState((state) => ({
-              user: { ...state.user, avatar }
+              user: { ...state.user, avatar },
             }));
           }
         }
@@ -110,6 +241,28 @@ export default function SettingsPage() {
     };
     fetchProfile();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === "Team") {
+      fetchTeamMembers();
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        const res = await getProperties();
+        if (res.data?.data) {
+          setProperties(res.data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch properties:", error);
+      }
+    };
+    if (user?.role === "super_admin") {
+      fetchProperties();
+    }
+  }, [user?.role]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -408,13 +561,19 @@ export default function SettingsPage() {
         <div className="space-y-6 max-w-3xl">
           <div className="bg-white rounded-xl border border-[#e5e7eb] overflow-hidden">
             <div className="p-6 border-b border-[#e5e7eb]">
-              <h2 className="text-lg font-semibold text-[#101828]">Change Password</h2>
-              <p className="text-sm text-[#667085] mt-1">Update your password to keep your account secure.</p>
+              <h2 className="text-lg font-semibold text-[#101828]">
+                Change Password
+              </h2>
+              <p className="text-sm text-[#667085] mt-1">
+                Update your password to keep your account secure.
+              </p>
             </div>
-            
+
             <div className="p-6 space-y-6">
               <div>
-                <label className="block text-sm font-medium text-[#344054] mb-2">Current Password</label>
+                <label className="block text-sm font-medium text-[#344054] mb-2">
+                  Current Password
+                </label>
                 <div className="relative">
                   <input
                     type={showPasswords.current ? "text" : "password"}
@@ -428,13 +587,19 @@ export default function SettingsPage() {
                     onClick={() => togglePasswordVisibility("current")}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-[#667085]"
                   >
-                    {showPasswords.current ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPasswords.current ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#344054] mb-2">New Password</label>
+                <label className="block text-sm font-medium text-[#344054] mb-2">
+                  New Password
+                </label>
                 <div className="relative">
                   <input
                     type={showPasswords.new ? "text" : "password"}
@@ -448,14 +613,22 @@ export default function SettingsPage() {
                     onClick={() => togglePasswordVisibility("new")}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-[#667085]"
                   >
-                    {showPasswords.new ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPasswords.new ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
-                <p className="text-xs text-[#667085] mt-1">Must be at least 6 characters</p>
+                <p className="text-xs text-[#667085] mt-1">
+                  Must be at least 6 characters
+                </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#344054] mb-2">Confirm New Password</label>
+                <label className="block text-sm font-medium text-[#344054] mb-2">
+                  Confirm New Password
+                </label>
                 <div className="relative">
                   <input
                     type={showPasswords.confirm ? "text" : "password"}
@@ -469,7 +642,11 @@ export default function SettingsPage() {
                     onClick={() => togglePasswordVisibility("confirm")}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-[#667085]"
                   >
-                    {showPasswords.confirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPasswords.confirm ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
               </div>
@@ -477,7 +654,13 @@ export default function SettingsPage() {
 
             <div className="p-6 bg-[#f9fafb] flex justify-end gap-3 border-t border-[#e5e7eb]">
               <button
-                onClick={() => setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" })}
+                onClick={() =>
+                  setPasswordData({
+                    currentPassword: "",
+                    newPassword: "",
+                    confirmPassword: "",
+                  })
+                }
                 className="px-5 py-2.5 text-sm font-semibold text-[#344054] border border-[#d0d5dd] rounded-lg hover:bg-white transition-colors"
               >
                 Cancel
@@ -494,11 +677,344 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {activeTab !== "General" && activeTab !== "Security" && (
-        <div className="bg-white rounded-xl border border-[#e5e7eb] p-12 text-center">
-          <p className="text-[#667085]">{activeTab} settings coming soon...</p>
+      {activeTab === "Team" && (
+        <div className="space-y-6 max-w-3xl">
+          <div className="bg-white rounded-xl border border-[#e5e7eb] overflow-hidden">
+            <div className="p-6 border-b border-[#e5e7eb] flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-[#101828]">
+                  Team Members
+                </h2>
+                <p className="text-sm text-[#667085] mt-1">
+                  Manage your team and their access levels.
+                </p>
+              </div>
+              {canManageTeam && (
+                <button
+                  onClick={() => setShowAddMember(true)}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-[#7f56d9] rounded-lg hover:bg-[#6941c6] transition-colors"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  Add Member
+                </button>
+              )}
+            </div>
+
+            {isLoadingTeam ? (
+              <div className="p-12 text-center text-[#667085]">Loading...</div>
+            ) : teamMembers.length === 0 ? (
+              <div className="p-12 text-center text-[#667085]">
+                No team members found.
+              </div>
+            ) : (
+              <div className="divide-y divide-[#e5e7eb]">
+                {teamMembers.map((member) => (
+                  <div
+                    key={member._id}
+                    className="p-4 flex items-center justify-between hover:bg-[#f9fafb]"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="h-10 w-10 rounded-full bg-[#7f56d9] flex items-center justify-center text-white font-bold overflow-hidden">
+                        {member.avatar ? (
+                          <img
+                            src={member.avatar}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          member.name?.[0] || "A"
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-[#101828]">
+                          {member.name}
+                        </p>
+                        <p className="text-xs text-[#667085]">{member.email}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-lg ${
+                          member.role === "super_admin"
+                            ? "bg-purple-100 text-purple-700"
+                            : member.role === "property_admin"
+                              ? "bg-blue-100 text-blue-700"
+                              : "bg-gray-100 text-gray-700"
+                        }`}
+                      >
+                        <ShieldCheck className="w-3 h-3" />
+                        {member.role?.replace(/_/g, " ")}
+                      </span>
+                      {canManageTeam && member._id !== user?.id && (
+                        <>
+                          <button
+                            onClick={() => {
+                              setEditingMember(member);
+                              setShowEditMember(true);
+                            }}
+                            className="p-2 text-[#7f56d9] hover:bg-[#f4ebff] rounded-lg transition-colors"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteTeamMember(member._id)}
+                            className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {showAddMember && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-xl p-6 w-full max-w-md">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-semibold text-[#101828]">
+                    Add Team Member
+                  </h3>
+                  <button
+                    onClick={() => setShowAddMember(false)}
+                    className="text-[#667085] hover:text-[#101828]"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-[#344054] mb-2">
+                      Name
+                    </label>
+                    <input
+                      type="text"
+                      value={newMember.name}
+                      onChange={(e) =>
+                        setNewMember({ ...newMember, name: e.target.value })
+                      }
+                      className="w-full px-4 py-2.5 border border-[#d0d5dd] rounded-lg text-sm focus:ring-4 focus:ring-[#f4ebff] focus:border-[#7f56d9] outline-none transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[#344054] mb-2">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={newMember.email}
+                      onChange={(e) =>
+                        setNewMember({ ...newMember, email: e.target.value })
+                      }
+                      className="w-full px-4 py-2.5 border border-[#d0d5dd] rounded-lg text-sm focus:ring-4 focus:ring-[#f4ebff] focus:border-[#7f56d9] outline-none transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[#344054] mb-2">
+                      Password
+                    </label>
+                    <input
+                      type="password"
+                      value={newMember.password}
+                      onChange={(e) =>
+                        setNewMember({ ...newMember, password: e.target.value })
+                      }
+                      className="w-full px-4 py-2.5 border border-[#d0d5dd] rounded-lg text-sm focus:ring-4 focus:ring-[#f4ebff] focus:border-[#7f56d9] outline-none transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[#344054] mb-2">
+                      Role
+                    </label>
+                    <select
+                      value={newMember.role}
+                      onChange={(e) =>
+                        setNewMember({ ...newMember, role: e.target.value })
+                      }
+                      className="w-full px-4 py-2.5 border border-[#d0d5dd] rounded-lg text-sm focus:ring-4 focus:ring-[#f4ebff] focus:border-[#7f56d9] outline-none transition-all"
+                    >
+                      <option value="staff">Staff</option>
+                      {user?.role === "super_admin" && (
+                        <>
+                          <option value="property_admin">Property Admin</option>
+                          <option value="super_admin">Super Admin</option>
+                        </>
+                      )}
+                    </select>
+                  </div>
+                  {(newMember.role === "property_admin" ||
+                    newMember.role === "staff") && (
+                    <div>
+                      <label className="block text-sm font-medium text-[#344054] mb-2">
+                        Property
+                      </label>
+                      <select
+                        value={newMember.propertyId}
+                        onChange={(e) =>
+                          setNewMember({
+                            ...newMember,
+                            propertyId: e.target.value,
+                          })
+                        }
+                        className="w-full px-4 py-2.5 border border-[#d0d5dd] rounded-lg text-sm focus:ring-4 focus:ring-[#f4ebff] focus:border-[#7f56d9] outline-none transition-all"
+                      >
+                        <option value="">Select a property</option>
+                        {properties.map((prop) => (
+                          <option key={prop._id} value={prop._id}>
+                            {prop.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
+                <div className="flex justify-end gap-3 mt-6">
+                  <button
+                    onClick={() => setShowAddMember(false)}
+                    className="px-5 py-2.5 text-sm font-semibold text-[#344054] border border-[#d0d5dd] rounded-lg hover:bg-white transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleCreateTeamMember}
+                    className="px-5 py-2.5 text-sm font-semibold text-white bg-[#7f56d9] rounded-lg hover:bg-[#6941c6] transition-colors"
+                  >
+                    Add Member
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showEditMember && editingMember && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-xl p-6 w-full max-w-md">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-semibold text-[#101828]">
+                    Edit Team Member
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setShowEditMember(false);
+                      setEditingMember(null);
+                    }}
+                    className="text-[#667085] hover:text-[#101828]"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-[#344054] mb-2">
+                      Name
+                    </label>
+                    <input
+                      type="text"
+                      value={editingMember.name || ""}
+                      onChange={(e) =>
+                        setEditingMember({
+                          ...editingMember,
+                          name: e.target.value,
+                        })
+                      }
+                      className="w-full px-4 py-2.5 border border-[#d0d5dd] rounded-lg text-sm focus:ring-4 focus:ring-[#f4ebff] focus:border-[#7f56d9] outline-none transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[#344054] mb-2">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={editingMember.email || ""}
+                      disabled
+                      className="w-full px-4 py-2.5 border border-[#d0d5dd] rounded-lg text-sm bg-[#f9fafb] text-[#667085]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[#344054] mb-2">
+                      Role
+                    </label>
+                    <select
+                      value={editingMember.role || "staff"}
+                      onChange={(e) =>
+                        setEditingMember({
+                          ...editingMember,
+                          role: e.target.value,
+                        })
+                      }
+                      className="w-full px-4 py-2.5 border border-[#d0d5dd] rounded-lg text-sm focus:ring-4 focus:ring-[#f4ebff] focus:border-[#7f56d9] outline-none transition-all"
+                    >
+                      <option value="staff">Staff</option>
+                      {user?.role === "super_admin" && (
+                        <>
+                          <option value="property_admin">Property Admin</option>
+                          <option value="super_admin">Super Admin</option>
+                        </>
+                      )}
+                    </select>
+                  </div>
+                  {(editingMember.role === "property_admin" ||
+                    editingMember.role === "staff") && (
+                    <div>
+                      <label className="block text-sm font-medium text-[#344054] mb-2">
+                        Property
+                      </label>
+                      <select
+                        value={editingMember.propertyId || ""}
+                        onChange={(e) =>
+                          setEditingMember({
+                            ...editingMember,
+                            propertyId: e.target.value,
+                          })
+                        }
+                        className="w-full px-4 py-2.5 border border-[#d0d5dd] rounded-lg text-sm focus:ring-4 focus:ring-[#f4ebff] focus:border-[#7f56d9] outline-none transition-all"
+                      >
+                        <option value="">Select a property</option>
+                        {properties.map((prop) => (
+                          <option key={prop._id} value={prop._id}>
+                            {prop.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
+                <div className="flex justify-end gap-3 mt-6">
+                  <button
+                    onClick={() => {
+                      setShowEditMember(false);
+                      setEditingMember(null);
+                    }}
+                    className="px-5 py-2.5 text-sm font-semibold text-[#344054] border border-[#d0d5dd] rounded-lg hover:bg-white transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleEditTeamMember}
+                    className="px-5 py-2.5 text-sm font-semibold text-white bg-[#7f56d9] rounded-lg hover:bg-[#6941c6] transition-colors"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
+
+      {activeTab !== "General" &&
+        activeTab !== "Security" &&
+        activeTab !== "Team" && (
+          <div className="bg-white rounded-xl border border-[#e5e7eb] p-12 text-center">
+            <p className="text-[#667085]">
+              {activeTab} settings coming soon...
+            </p>
+          </div>
+        )}
     </div>
   );
 }

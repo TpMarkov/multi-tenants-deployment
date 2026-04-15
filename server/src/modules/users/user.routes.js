@@ -1,6 +1,17 @@
 import express from 'express';
 import multer from 'multer';
-import { getUsers, createUser, getProfile, updateProfile, uploadAvatar, updatePassword } from './user.controller.js';
+import { 
+  getUsers, 
+  createUser, 
+  getProfile, 
+  updateProfile, 
+  uploadAvatar, 
+  updatePassword,
+  getTeamMembers,
+  createTeamMember,
+  deleteTeamMember,
+  updateTeamMember
+} from './user.controller.js';
 import { protect, authorize } from '../../middlewares/auth.js';
 
 const router = express.Router();
@@ -21,6 +32,15 @@ router.route('/profile/avatar')
 
 router.route('/profile/password')
   .put(updatePassword);
+
+// Team management routes
+router.route('/team')
+  .get(authorize('super_admin', 'property_admin'), getTeamMembers)
+  .post(authorize('super_admin', 'property_admin'), createTeamMember);
+
+router.route('/team/:id')
+  .put(authorize('super_admin'), updateTeamMember)
+  .delete(authorize('super_admin', 'property_admin'), deleteTeamMember);
 
 router.route('/')
   .get(authorize('super_admin', 'property_admin'), getUsers)

@@ -63,7 +63,7 @@ function Modal({ title, onClose, children, large = false }) {
 }
 
 export default function MenuPage() {
-  const { propertyId } = useAdminStore();
+  const { propertyId, user } = useAdminStore();
   const pid = propertyId || process.env.NEXT_PUBLIC_DEFAULT_PROPERTY_ID;
 
   const [categories, setCategories] = useState([]);
@@ -88,6 +88,12 @@ export default function MenuPage() {
   const [itemSaving, setItemSaving] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  // Super admin: full access (add/delete/toggle)
+  // Property admin & Staff: view only + toggle availability
+  const canManageMenu = user?.role === "super_admin";
+  const canToggleAvailability =
+    user?.permissions?.canToggleMenuAvailability ||
+    user?.role === "super_admin";
 
   useEffect(() => {
     const fetch = async () => {
@@ -422,20 +428,22 @@ export default function MenuPage() {
               </button>
             ))}
           </div>
-          <button
-            onClick={() =>
-              activeTab === "categories"
-                ? setShowCatModal(true)
-                : openItemModal()
-            }
-            className="flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-2.5 bg-[#26c6da] text-white rounded text-sm font-medium hover:bg-[#1ea6b8] transition-all"
-          >
-            <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">
-              Add {activeTab === "categories" ? "Category" : "Item"}
-            </span>
-            <span className="sm:hidden">Add</span>
-          </button>
+          {canManageMenu && (
+            <button
+              onClick={() =>
+                activeTab === "categories"
+                  ? setShowCatModal(true)
+                  : openItemModal()
+              }
+              className="flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-2.5 bg-[#26c6da] text-white rounded text-sm font-medium hover:bg-[#1ea6b8] transition-all"
+            >
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline">
+                Add {activeTab === "categories" ? "Category" : "Item"}
+              </span>
+              <span className="sm:hidden">Add</span>
+            </button>
+          )}
         </div>
 
         <div className="bg-white rounded-md shadow-sm overflow-hidden">
@@ -480,15 +488,17 @@ export default function MenuPage() {
                           items
                         </td>
                         <td className="px-4 md:px-6 py-3 md:py-4">
-                          <button
-                            onClick={() =>
-                              handleDeleteCategory(cat._id, cat.name)
-                            }
-                            className="text-red-600 hover:text-red-700 font-medium text-xs md:text-sm flex items-center gap-1"
-                          >
-                            <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
-                            <span className="hidden sm:inline">Delete</span>
-                          </button>
+                          {canManageMenu && (
+                            <button
+                              onClick={() =>
+                                handleDeleteCategory(cat._id, cat.name)
+                              }
+                              className="text-red-600 hover:text-red-700 font-medium text-xs md:text-sm flex items-center gap-1"
+                            >
+                              <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
+                              <span className="hidden sm:inline">Delete</span>
+                            </button>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -555,10 +565,22 @@ export default function MenuPage() {
                           ${item.price?.toFixed(2)}
                         </td>
                         <td className="px-3 md:px-6 py-3 md:py-4">
-                          <Toggle
-                            checked={item.isAvailable}
-                            onChange={() => toggleAvailability(item)}
-                          />
+                          {canToggleAvailability ? (
+                            <Toggle
+                              checked={item.isAvailable}
+                              onChange={() => toggleAvailability(item)}
+                            />
+                          ) : (
+                            <span
+                              className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                item.isAvailable
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-slate-100 text-slate-500"
+                              }`}
+                            >
+                              {item.isAvailable ? "Yes" : "No"}
+                            </span>
+                          )}
                         </td>
                         <td className="px-3 md:px-6 py-3 md:py-4">
                           <div className="flex items-center gap-1 md:gap-2">
@@ -569,15 +591,17 @@ export default function MenuPage() {
                               <Edit2 className="h-3 w-3 md:h-4 md:w-4" />
                               <span className="hidden sm:inline">Edit</span>
                             </button>
-                            <button
-                              onClick={() =>
-                                handleDeleteItem(item._id, item.name)
-                              }
-                              className="text-red-600 hover:text-red-700 font-medium text-xs flex items-center gap-1 px-2 py-1"
-                            >
-                              <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
-                              <span className="hidden sm:inline">Delete</span>
-                            </button>
+                            {canManageMenu && (
+                              <button
+                                onClick={() =>
+                                  handleDeleteItem(item._id, item.name)
+                                }
+                                className="text-red-600 hover:text-red-700 font-medium text-xs flex items-center gap-1 px-2 py-1"
+                              >
+                                <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
+                                <span className="hidden sm:inline">Delete</span>
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>

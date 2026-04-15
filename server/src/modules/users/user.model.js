@@ -38,6 +38,13 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null
     },
+    permissions: {
+      canViewAll: { type: Boolean, default: false },
+      canManageRooms: { type: Boolean, default: false },
+      canManageMenu: { type: Boolean, default: false },
+      canToggleMenuAvailability: { type: Boolean, default: false },
+      noSettings: { type: Boolean, default: false },
+    },
   },
   { timestamps: true }
 );
@@ -45,6 +52,38 @@ const userSchema = new mongoose.Schema(
 // Hash password before saving
 userSchema.pre('save', async function () {
   if (!this.isModified('password')) {
+    // Set default permissions based on role if new or role changed
+    if (this.isNew || this.isModified('role')) {
+      switch (this.role) {
+        case 'super_admin':
+          this.permissions = {
+            canViewAll: true,
+            canManageRooms: true,
+            canManageMenu: true,
+            canToggleMenuAvailability: true,
+            noSettings: false,
+          };
+          break;
+        case 'property_admin':
+          this.permissions = {
+            canViewAll: true,
+            canManageRooms: false,
+            canManageMenu: false,
+            canToggleMenuAvailability: true,
+            noSettings: false,
+          };
+          break;
+        case 'staff':
+          this.permissions = {
+            canViewAll: true,
+            canManageRooms: false,
+            canManageMenu: false,
+            canToggleMenuAvailability: true,
+            noSettings: true,
+          };
+          break;
+      }
+    }
     return;
   }
   const salt = await bcrypt.genSalt(10);
