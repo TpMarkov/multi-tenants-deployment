@@ -99,7 +99,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                placeholder="admin@hotel.com"
+                placeholder="admin2@hotel.com"
                 className="w-full py-3 bg-transparent border-b-2 border-[#e1e1e1] text-sm font-medium text-[#333] placeholder:text-[#999] focus:outline-none focus:border-[#1e88e5] transition-all duration-300"
               />
             </div>
@@ -176,7 +176,7 @@ export default function LoginPage() {
             <p className="text-xs text-[#999] text-center font-medium">
               Demo Credentials: <br className="sm:hidden" />
               <span className="text-[#333] font-bold">
-                admin@hotel.com
+                admin2@hotel.com
               </span> /{" "}
               <span className="text-[#333] font-bold">password123</span>
             </p>
