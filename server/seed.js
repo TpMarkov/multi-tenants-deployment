@@ -42,6 +42,16 @@ const seed = async () => {
     });
     console.log("✓ Created Admin User: admin@hotel.com / password123");
 
+    // 2b. Create second Admin User (visitor demo credentials)
+    await User.create({
+      name: "Admin User 2",
+      email: "admin2@hotel.com",
+      password: "password123",
+      role: "super_admin",
+      propertyId: property._id,
+    });
+    console.log("✓ Created Admin User: admin2@hotel.com / password123");
+
     console.log("\n--- DATA SEEDED SUCCESSFULLY ---");
     console.log("Property ID (save for later):", property._id);
     console.log("---------------------------------\n");
