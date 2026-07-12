@@ -75,10 +75,11 @@ const limiter = rateLimit({
 });
 app.use("/api", limiter);
 
-// Stricter rate limit for login attempts
+// Stricter rate limit for login attempts (only enforced in production)
+const isProduction = process.env.NODE_ENV === "production";
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // limit each IP to 5 login attempts per windowMs
+  max: isProduction ? 5 : 1000, // limit to 5 in production; generous for local dev/testing
   message: {
     success: false,
     message: "Too many login attempts, please try again later.",

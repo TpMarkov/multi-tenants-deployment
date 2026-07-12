@@ -32,7 +32,7 @@ export const ensureDemoData = async () => {
     }
 
     for (const admin of DEMO_ADMINS) {
-      const existing = await User.findOne({ email: admin.email });
+      const existing = await User.findOne({ email: admin.email }).select("+password");
 
       if (!existing) {
         await User.create({

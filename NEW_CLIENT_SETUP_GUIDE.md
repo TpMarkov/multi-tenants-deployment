@@ -8,7 +8,7 @@ re-deploying it cleanly for a **new client**. It covers:
 3. Setting up a fresh MongoDB database
 4. Creating login credentials for **1 Super Admin** and **1 Normal Admin (property admin)**
 5. Running the app locally
-6. Deploying to production (Vercel + Railway)
+6. Deploying to production (Vercel frontend + Render backend)
 7. Developing and running the test suite
 
 ---
@@ -297,28 +297,43 @@ cd client && npm install && npm run dev
 
 ---
 
-## 7. Production Deployment (Vercel + Railway)
+## 7. Production Deployment (Vercel + Render)
 
-### 7.1 Backend on Railway
-1. Go to https://railway.app, sign in with GitHub, "New Project" → "Deploy from GitHub".
-2. Select the **new repo**, set root directory to `server`.
-3. Add environment variables (same as `server/.env`) but with:
+> **We no longer use Railway** (the subscription expired). The backend is now hosted for free on
+> **Render** (`render.yaml` is committed at the repo root). The frontend stays on Vercel.
+> The backend self-heals its admin accounts on every start (`server/src/config/ensureDemoData.js`),
+> so you no longer need to run `npm run seed` after a deploy — the demo super-admin
+> `admin@hotel.com` / `password123` is always (re)created.
+
+### 7.1 Backend on Render (free)
+1. Go to https://dashboard.render.com, "New +" → "Web Service", connect the GitHub repo.
+2. Configure:
+   - Name: `multi-tenants-backend`, Runtime: Node, Branch: `main`
+   - Build Command: `cd server && npm install`
+   - Start Command: `npm start`
+   - Plan: **Free**
+3. Add Environment Variables (the committed `render.yaml` sets sensible defaults you can edit):
    - `NODE_ENV=production`
+   - `MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/<dbname>`
+   - `JWT_SECRET=<long-random-secret>`
+   - `JWT_EXPIRE=24h`
    - `CORS_ORIGIN=https://<your-vercel-domain>`
    - `SOCKET_ORIGIN=https://<your-vercel-domain>`
-4. Deploy. Copy the generated backend URL (e.g. `https://api-xxx.up.railway.app`).
+   - `PORT=10000`
+4. Deploy. Copy the generated backend URL (e.g. `https://multi-tenants-backend.onrender.com`).
+
+> Render free tier sleeps after 15 min of inactivity (cold start 30–90s). That's expected and free.
 
 ### 7.2 Frontend on Vercel
-1. Go to https://vercel.com, import the **new repo**, set root directory to `client`.
-2. Add env vars:
-   - `NEXT_PUBLIC_API_URL=https://<railway-backend>/api/v1`
-   - `NEXT_PUBLIC_SOCKET_URL=https://<railway-backend>`
-3. Deploy.
+1. Go to https://vercel.com, import the repo (root directory = `client`).
+2. Add / update env vars — **this is the key step that removes the old Railway dependency**:
+   - `NEXT_PUBLIC_API_URL=https://<render-backend>/api/v1`
+   - `NEXT_PUBLIC_SOCKET_URL=https://<render-backend>`
+3. Redeploy (these are build-time vars, so a fresh deploy is required).
 
-### 7.3 Seed the production database
-Set the production `MONGODB_URI` in Railway, then run seed against it locally by temporarily
-pointing `server/.env`'s `MONGODB_URI` at the Atlas prod DB and running `npm run seed`, OR run
-it from the Railway shell. **Reseed wipes all data**, so only do this on a fresh DB.
+### 7.3 Verify
+- Backend health: `https://<render-backend>/health` → `db.status: "connected"`
+- Admin login: `https://<your-vercel-domain>/admin/login` with `admin@hotel.com` / `password123`
 
 ---
 
