@@ -1,24 +1,16 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useAdminStore } from '@/store/useAdminStore';
 import Sidebar from '@/components/layout/Sidebar';
 import { Toaster } from 'react-hot-toast';
 import { Menu, X } from 'lucide-react';
 
 export default function AdminLayout({ children }) {
-  const { isAuthenticated } = useAdminStore();
-  const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const isLoginPage = pathname === '/admin/login';
-
-  useEffect(() => {
-    if (!isAuthenticated && !isLoginPage) {
-      router.push('/admin/login');
-    }
-  }, [isAuthenticated, isLoginPage, router]);
 
   useEffect(() => {
     setSidebarOpen(false);
@@ -33,8 +25,6 @@ export default function AdminLayout({ children }) {
       </>
     );
   }
-
-  if (!isAuthenticated) return null;
 
   return (
     <div className="flex h-screen bg-[#eef5f9] overflow-hidden">

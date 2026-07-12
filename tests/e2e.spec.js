@@ -42,8 +42,8 @@ async function restoreNetwork(page) {
 test.describe.serial('E2E Tests', () => {
   test('Admin Login', async ({ page }) => {
     await page.goto(`${BASE_URL}/admin/login`);
-    await page.fill('input[name="email"]', 'admin@hotel.com');
-    await page.fill('input[name="password"]', 'password123');
+    await page.fill('input[name="email"]', 'admin@webdevstudiohq.com');
+    await page.fill('input[name="password"]', 'HospitalityOS2026!');
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(`${BASE_URL}/admin/dashboard`);
   });
@@ -171,5 +171,4 @@ test.describe.serial('E2E Tests', () => {
 // Instructions to run the tests:
 // 1. Install Playwright dependencies: npm install --save-dev @playwright/test
 // 2. Install Playwright browsers: npx playwright install
-// 3. Run the e2e tests: npx playwright test tests/e2e.spec.js</content>
-<parameter name="filePath">C:\Users\marko\OneDrive\Desktop\Projects-for-portfolio-versions\multi-tenant hospitality\tests\e2e.spec.js
+// 3. Run the e2e tests: npx playwright test tests/e2e.spec.js

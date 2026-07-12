@@ -20,13 +20,25 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
+      console.log("[LOGIN] Attempting login with email:", email);
+      console.log("[LOGIN] API baseURL:", process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1 (default)");
       const res = await loginAdmin({ email, password });
+      console.log("[LOGIN] Success response:", res.status, res.data);
       const { user, token } = res.data;
       login(user, token);
       connectSocket(token);
       toast.success(`Welcome back, ${user.name}!`);
       router.push("/admin/dashboard");
     } catch (err) {
+      console.error("[LOGIN] Error object:", err);
+      if (err.response) {
+        console.error("[LOGIN] Server responded with status:", err.response.status);
+        console.error("[LOGIN] Server error data:", err.response.data);
+      } else if (err.request) {
+        console.error("[LOGIN] NETWORK ERROR - no response received. The API URL is likely wrong or unreachable (check NEXT_PUBLIC_API_URL).");
+      } else {
+        console.error("[LOGIN] Request setup error:", err.message);
+      }
       toast.error(
         err.response?.data?.error || "Invalid credentials. Please try again.",
       );
@@ -99,7 +111,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                placeholder="admin2@hotel.com"
+                placeholder="admin@webdevstudiohq.com"
                 className="w-full py-3 bg-transparent border-b-2 border-[#e1e1e1] text-sm font-medium text-[#333] placeholder:text-[#999] focus:outline-none focus:border-[#1e88e5] transition-all duration-300"
               />
             </div>
@@ -176,9 +188,9 @@ export default function LoginPage() {
             <p className="text-xs text-[#999] text-center font-medium">
               Demo Credentials: <br className="sm:hidden" />
               <span className="text-[#333] font-bold">
-                admin2@hotel.com
+                admin@webdevstudiohq.com
               </span> /{" "}
-              <span className="text-[#333] font-bold">password123</span>
+              <span className="text-[#333] font-bold">HospitalityOS2026!</span>
             </p>
           </div>
         </div>

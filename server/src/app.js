@@ -4,6 +4,7 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
+import mongoose from "mongoose";
 import errorHandler from "./middlewares/errorHandler.js";
 
 // Load env vars

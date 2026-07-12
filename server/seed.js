@@ -14,7 +14,6 @@ const seed = async () => {
     await mongoose.connect(process.env.MONGODB_URI);
     console.log("Connected!");
 
-    // Clear existing data
     await Promise.all([
       Property.deleteMany(),
       Room.deleteMany(),
@@ -25,38 +24,35 @@ const seed = async () => {
 
     console.log("Cleared existing data.");
 
-    // 1. Create Property (Our first client - The Hotel)
     const property = await Property.create({
-      name: "Grand Antigravity Resort",
-      address: "123 Luxury Way, Paradise City",
+      name: "WebDev Studio Client",
+      address: "1 Developer Lane, Tech City, TC 90210",
     });
-    console.log(`✓ Created Property: ${property.name} (${property._id})`);
+    console.log(`Created Property: ${property.name} (${property._id})`);
 
-    // 2. Create Admin User
-    await User.create({
-      name: "Admin User",
-      email: "admin@hotel.com",
-      password: "password123",
+    const superAdmin = await User.create({
+      name: "Super Admin",
+      email: "admin@webdevstudiohq.com",
+      password: "HospitalityOS2026!",
       role: "super_admin",
       propertyId: property._id,
     });
-    console.log("✓ Created Admin User: admin@hotel.com / password123");
+    console.log(`Created Super Admin: ${superAdmin.email} / HospitalityOS2026!`);
 
-    // 2b. Create second Admin User (visitor demo credentials)
-    await User.create({
-      name: "Admin User 2",
-      email: "admin2@hotel.com",
-      password: "password123",
-      role: "super_admin",
+    const propertyAdmin = await User.create({
+      name: "Property Admin",
+      email: "manager@webdevstudiohq.com",
+      password: "ManagerOS2026!",
+      role: "property_admin",
       propertyId: property._id,
     });
-    console.log("✓ Created Admin User: admin2@hotel.com / password123");
+    console.log(`Created Property Admin: ${propertyAdmin.email} / ManagerOS2026!`);
 
     console.log("\n--- DATA SEEDED SUCCESSFULLY ---");
-    console.log("Property ID (save for later):", property._id);
+    console.log("Property ID:", property._id);
     console.log("---------------------------------\n");
 
-    process.exit();
+    process.exit(0);
   } catch (error) {
     console.error("Error seeding data:", error);
     process.exit(1);

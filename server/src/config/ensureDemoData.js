@@ -44,7 +44,16 @@ export const ensureDemoData = async () => {
         });
         console.log(`✓ Created Admin User: ${admin.email} / ${admin.password}`);
       } else {
-        console.log(`• Admin User already exists: ${admin.email}`);
+        // Self-heal: if the stored password doesn't match the expected demo
+        // password (e.g. a corrupted/changed hash), reset it.
+        const matches = await existing.matchPassword(admin.password);
+        if (!matches) {
+          existing.password = admin.password;
+          await existing.save();
+          console.log(`✓ Reset password for: ${admin.email}`);
+        } else {
+          console.log(`• Admin User already exists: ${admin.email}`);
+        }
       }
     }
 

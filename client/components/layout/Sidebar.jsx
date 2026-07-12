@@ -100,7 +100,7 @@ export default function Sidebar({ onClose }) {
               {user?.name || "Admin"}
             </p>
             <p className="text-[#a6b7bf] text-xs">
-              {user?.role?.replace("_", " ")}
+              {user?.role?.replace("_", " ") || "super admin"}
             </p>
           </div>
         </div>

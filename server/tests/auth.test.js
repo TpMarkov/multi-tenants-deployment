@@ -29,6 +29,27 @@ describe('Auth Module', () => {
     expect(res.body).toHaveProperty('token');
   });
 
+  it('should login the seeded super admin with correct role', async () => {
+    await User.create({
+      name: 'Super Admin',
+      email: 'admin@webdevstudiohq.com',
+      password: 'HospitalityOS2026!',
+      role: 'super_admin'
+    });
+
+    const res = await request(app)
+      .post('/api/v1/auth/login')
+      .send({
+        email: 'admin@webdevstudiohq.com',
+        password: 'HospitalityOS2026!'
+      });
+
+    expect(res.statusCode).toEqual(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body).toHaveProperty('token');
+    expect(res.body.user.role).toBe('super_admin');
+  });
+
   it('should fail with invalid credentials', async () => {
     const res = await request(app)
       .post('/api/v1/auth/login')
