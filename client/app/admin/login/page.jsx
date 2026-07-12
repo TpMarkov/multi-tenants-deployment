@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAdminStore } from "@/store/useAdminStore";
 import { loginAdmin } from "@/lib/api";
@@ -15,6 +15,24 @@ export default function LoginPage() {
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [dbStatus, setDbStatus] = useState("checking"); // checking | connected | disconnected | unreachable
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+
+  useEffect(() => {
+    let active = true;
+    const checkHealth = async () => {
+      try {
+        const res = await fetch(`${apiUrl}/health`);
+        if (!res.ok) throw new Error("bad status");
+        const data = await res.json();
+        if (active) setDbStatus(data?.db?.status === "connected" ? "connected" : "disconnected");
+      } catch {
+        if (active) setDbStatus("unreachable");
+      }
+    };
+    checkHealth();
+    return () => { active = false; };
+  }, [apiUrl]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,9 +57,19 @@ export default function LoginPage() {
       } else {
         console.error("[LOGIN] Request setup error:", err.message);
       }
-      toast.error(
-        err.response?.data?.error || "Invalid credentials. Please try again.",
-      );
+      let message = "Invalid credentials. Please try again.";
+      if (err.response) {
+        if (err.response.status === 500) {
+          message = "Server or database error — check the connection indicator above.";
+        } else if (err.response.status === 401) {
+          message = err.response?.data?.error || "Invalid credentials. Please try again.";
+        } else {
+          message = err.response?.data?.error || "Login failed. Please try again.";
+        }
+      } else if (err.request) {
+        message = "Cannot reach the server. Check the connection indicator above.";
+      }
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -95,6 +123,34 @@ export default function LoginPage() {
             <p className="text-[#999] text-sm font-medium">
               Welcome back! Please enter your details.
             </p>
+          </div>
+
+          {/* Live DB / API connection indicator */}
+          <div className="mb-6">
+            {dbStatus === "checking" && (
+              <div className="flex items-center gap-2 text-xs font-medium text-[#999]">
+                <span className="h-2 w-2 rounded-full bg-gray-400 animate-pulse" />
+                Checking server & database connection…
+              </div>
+            )}
+            {dbStatus === "connected" && (
+              <div className="flex items-center gap-2 text-xs font-medium text-green-600">
+                <span className="h-2 w-2 rounded-full bg-green-500" />
+                Server & database connected
+              </div>
+            )}
+            {dbStatus === "disconnected" && (
+              <div className="flex items-center gap-2 text-xs font-medium text-amber-600">
+                <span className="h-2 w-2 rounded-full bg-amber-500" />
+                Database reachable but NOT connected
+              </div>
+            )}
+            {dbStatus === "unreachable" && (
+              <div className="flex items-center gap-2 text-xs font-medium text-red-600">
+                <span className="h-2 w-2 rounded-full bg-red-500" />
+                Cannot reach API server ({apiUrl})
+              </div>
+            )}
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-8">

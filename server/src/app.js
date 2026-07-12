@@ -49,6 +49,37 @@ app.use("/api/v1/menu", menuRoutes);
 app.use("/api/v1/orders", orderRoutes);
 app.use("/api/v1/feedback", feedbackRoutes);
 
+// Health / DB-connection check (used by the frontend login screen)
+app.get("/api/v1/health", async (req, res) => {
+  let dbStatus = "disconnected";
+  let dbHost = null;
+  let dbName = null;
+  let pingOk = false;
+  try {
+    if (mongoose.connection.readyState === 1) {
+      await mongoose.connection.db.admin().ping();
+      pingOk = true;
+      dbStatus = "connected";
+      dbHost = mongoose.connection.host;
+      dbName = mongoose.connection.name;
+    }
+  } catch (err) {
+    dbStatus = "error";
+  }
+  res.status(200).json({
+    success: true,
+    server: "ok",
+    db: {
+      status: dbStatus,
+      readyState: mongoose.connection.readyState,
+      ping: pingOk,
+      host: dbHost,
+      name: dbName,
+    },
+    time: new Date().toISOString(),
+  });
+});
+
 // Root route
 app.get("/", (req, res) => {
   res.json({ message: "Hospitality SaaS API API v1" });
