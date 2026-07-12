@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: multi-tenants-backend
+    runtime: node
+    plan: free
+    region: frankfurt
+    branch: main
+    autoDeploy: true
+    buildCommand: cd server && npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    healthCheckTimeout: 100
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "10000"
+      - key: MONGODB_URI
+        value: mongodb+srv://<user>:<password>@<cluster>.mongodb.net/<dbname>
+      - key: JWT_SECRET
+        value: replace-with-a-long-random-secret-string
+      - key: JWT_EXPIRE
+        value: "24h"
+      - key: CORS_ORIGIN
+        value: https://your-frontend-domain.com
+      - key: SOCKET_ORIGIN
+        value: https://your-frontend-domain.com
