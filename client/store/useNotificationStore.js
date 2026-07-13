@@ -7,6 +7,32 @@ import {
   markAllNotificationsRead,
 } from '@/lib/api';
 
+// Shared AudioContext so the notification sound can actually play in the
+// browser. Audio is blocked until the user interacts with the page at least
+// once (autoplay policy), so we unlock/resume the context on first gesture.
+let audioCtx = null;
+let audioUnlockBound = false;
+
+const ensureAudioUnlocked = () => {
+  if (typeof window === 'undefined') return;
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    if (!audioCtx) audioCtx = new Ctx();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  } catch {
+    // ignore
+  }
+};
+
+if (typeof window !== 'undefined' && !audioUnlockBound) {
+  audioUnlockBound = true;
+  const bind = () => ensureAudioUnlocked();
+  window.addEventListener('pointerdown', bind);
+  window.addEventListener('keydown', bind);
+  window.addEventListener('touchstart', bind);
+}
+
 export const useNotificationStore = create(
   persist(
     (set, get) => ({
@@ -112,16 +138,22 @@ export const useNotificationStore = create(
         set((state) => ({ soundEnabled: !state.soundEnabled }));
       },
 
+      unlockAudio: () => ensureAudioUnlocked(),
+
       playNotificationSound: () => {
         try {
-          const AudioCtx = window.AudioContext || window.webkitAudioContext;
-          if (!AudioCtx) return;
-          const audioContext = new AudioCtx();
-          const oscillator = audioContext.createOscillator();
-          const gainNode = audioContext.createGain();
+          const Ctx = window.AudioContext || window.webkitAudioContext;
+          if (!Ctx) return;
+          if (!audioCtx) audioCtx = new Ctx();
+          // Browsers start the context suspended until a user gesture; resume
+          // so the notification tone is audible.
+          if (audioCtx.state === 'suspended') audioCtx.resume();
+
+          const oscillator = audioCtx.createOscillator();
+          const gainNode = audioCtx.createGain();
 
           oscillator.connect(gainNode);
-          gainNode.connect(audioContext.destination);
+          gainNode.connect(audioCtx.destination);
 
           oscillator.frequency.value = 800;
           oscillator.type = 'sine';
@@ -129,8 +161,11 @@ export const useNotificationStore = create(
 
           oscillator.start();
           setTimeout(() => {
-            oscillator.stop();
-            audioContext.close();
+            try {
+              oscillator.stop();
+            } catch {
+              // already stopped
+            }
           }, 200);
         } catch (e) {
           // Audio may be blocked until user interaction; ignore.
