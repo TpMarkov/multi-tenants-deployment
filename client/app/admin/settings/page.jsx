@@ -839,7 +839,6 @@ export default function SettingsPage() {
                       )}
                     </select>
                   </div>
-                  </div>
                 </div>
                 <div className="flex justify-end gap-3 mt-6">
                   <button
