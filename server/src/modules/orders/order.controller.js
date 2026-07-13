@@ -235,7 +235,7 @@ export const updateOrderStatus = asyncHandler(async (req, res, next) => {
   // Multi-tenant check
   if (
     req.user.role !== "super_admin" &&
-    order.propertyId.toString() !== req.user.propertyId.toString()
+    order.propertyId.toString() !== req.user.propertyId?.toString()
   ) {
     return res.status(403).json({ success: false, error: "Not authorized" });
   }

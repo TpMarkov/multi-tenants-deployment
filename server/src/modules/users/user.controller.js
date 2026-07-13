@@ -214,12 +214,7 @@ export const createTeamMember = asyncHandler(async (req, res, next) => {
 
   let assignedPropertyId;
   if (req.user.role === "super_admin") {
-    assignedPropertyId = propertyId;
-    if (!assignedPropertyId) {
-      return res
-        .status(400)
-        .json({ success: false, error: "Property ID is required" });
-    }
+    assignedPropertyId = propertyId || null;
   } else {
     assignedPropertyId = req.user.propertyId;
   }

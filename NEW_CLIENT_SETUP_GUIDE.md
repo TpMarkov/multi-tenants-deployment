@@ -182,21 +182,132 @@ cd client && npm run dev
 
 ---
 
-## 9. Adding More Admins / Staff Later
+## 9. Onboarding a New Client Property (Developer Workflow)
 
-Log in as Super Admin, then use the users API (no reseed needed):
+Once the super admin is logged in, the developer must create the client's first
+property and a `property_admin` account so the client can self-serve their own
+admins and staff going forward.
+
+### 9.1 Prerequisite — Log In as Super Admin
+
+Use the credentials from `server/src/config/superAdmin.js`. You can verify login
+via the UI at `/admin/login` or via curl:
+
 ```bash
-TOKEN=$(curl -s -X POST https://<client>-backend/api/v1/auth/login \
+TOKEN=$(curl -s -X POST https://<backend>/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"<owner@client.com>","password":"<password>"}' \
+  -d '{"email":"<superadmin-email>","password":"<password>"}' \
   | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>console.log(JSON.parse(d).token))")
-
-curl -X POST https://<client>-backend/api/v1/users \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"name":"Manager","email":"manager@client.com","password":"StaffPass123","role":"property_admin"}'
 ```
-(`property_admin` / `staff` accounts need a `propertyId`; create a property first
-in the UI, then pass its id.)
+
+> All requests below assume `$TOKEN` is set.
+
+### 9.2 Create the Property
+
+```bash
+curl -X POST https://<backend>/api/v1/properties \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "<Client Property Name>",
+    "address": "<Full address of the hotel/property>"
+  }'
+```
+
+Expected response:
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "<PROPERTY_ID>",
+    "name": "<Client Property Name>",
+    "address": "<Full address>",
+    "createdAt": "...",
+    "updatedAt": "..."
+  }
+}
+```
+
+Copy the returned `_id` — this is the `propertyId` you will use in the next step.
+
+> **Route:** `POST /api/v1/properties`  
+> **Controller:** `server/src/modules/properties/property.controller.js`  
+> **Access:** Super admin only (`authorize('super_admin')`)
+
+### 9.3 Create the Client's Property Admin
+
+```bash
+curl -X POST https://<backend>/api/v1/users/team \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "<Client Owner / Manager Name>",
+    "email": "<manager@client.com>",
+    "password": "<StrongUniquePassword!>",
+    "role": "property_admin",
+    "propertyId": "<PROPERTY_ID>"
+  }'
+```
+
+Expected response:
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "<USER_ID>",
+    "name": "<Client Owner / Manager Name>",
+    "email": "<manager@client.com>",
+    "role": "property_admin",
+    "propertyId": "<PROPERTY_ID>",
+    "permissions": {
+      "canViewAll": true,
+      "canManageRooms": false,
+      "canManageMenu": false,
+      "canToggleMenuAvailability": true,
+      "noSettings": false
+    },
+    "createdAt": "..."
+  }
+}
+```
+
+> **Route:** `POST /api/v1/users/team`  
+> **Controller:** `server/src/modules/users/user.controller.js` (`createTeamMember`)  
+> **Access:** Super admin or property admin  
+> **Note:** When called as `super_admin`, `propertyId` is required in the body.
+
+### 9.4 What the Property Admin Can Do
+
+The newly created `property_admin` can now log in at `/admin/login` with the
+credentials you just set. Once logged in, they can:
+
+- **Create more admins and staff** for their own property via `POST /api/v1/users/team`
+  (they can only assign `staff` role; only super admins can create other
+  `property_admin` accounts).
+- **Manage rooms**, menu items, categories, and orders scoped to their `propertyId`.
+- **View analytics** and feedback for their property.
+
+> **Route:** `POST /api/v1/users/team`  
+> **Access:** `property_admin` or `super_admin`  
+> **Behavior:** A `property_admin` is locked to `req.user.propertyId` and can only
+> create users with `role: "staff"`. A `super_admin` can pass any `role` and
+> `propertyId`.
+
+### 9.5 Validating the Setup (End-to-End Smoke Test)
+
+1. Open `/admin/login` and sign in as the new `property_admin`.
+2. Verify the dashboard loads data scoped to the new property (rooms, orders, etc.).
+3. Create a test staff member via the team management UI or API.
+4. Log in as the new staff member and confirm they can access the property but
+   cannot create other admins.
+
+### 9.6 API Reference Summary
+
+| Step | Method | Endpoint | Body (key fields) | Who can call |
+|------|--------|----------|-------------------|--------------|
+| Create property | `POST` | `/api/v1/properties` | `name`, `address` | `super_admin` |
+| Create property admin | `POST` | `/api/v1/users/team` | `name`, `email`, `password`, `role: "property_admin"`, `propertyId` | `super_admin` |
+| Create staff (client self-serve) | `POST` | `/api/v1/users/team` | `name`, `email`, `password`, `role: "staff"` | `property_admin` (locked to own `propertyId`) |
 
 ---
 

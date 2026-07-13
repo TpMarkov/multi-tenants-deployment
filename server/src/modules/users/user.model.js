@@ -29,10 +29,8 @@ const userSchema = new mongoose.Schema(
     },
     propertyId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Property',
-      required: function () {
-        return this.role !== 'super_admin';
-      },
+      ref: "Property",
+      default: null,
     },
     avatar: {
       type: String,

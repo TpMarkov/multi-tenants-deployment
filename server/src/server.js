@@ -9,14 +9,26 @@ const NODE_ENV = process.env.NODE_ENV || "development";
 
 // Resolve allowed CORS origins (supports comma-separated list)
 const parseOrigins = (value) => {
-  if (!value) return "http://localhost:3000";
-  const origins = value
+  if (!value) return [];
+  return value
     .split(",")
     .map((o) => o.trim())
     .filter(Boolean);
-  return origins.length === 1 ? origins[0] : origins;
 };
 const CORS_ORIGIN = parseOrigins(process.env.CORS_ORIGIN);
+const SOCKET_ORIGIN = parseOrigins(process.env.SOCKET_ORIGIN);
+
+// Dev origins are always permitted so local development works out of the box.
+const DEV_ORIGINS =
+  process.env.NODE_ENV !== "production"
+    ? ["http://localhost:3000", "http://localhost:3001"]
+    : [];
+
+// Socket.IO must accept the frontend origin whether it is configured via
+// CORS_ORIGIN or SOCKET_ORIGIN (both are documented deploy variables).
+const SOCKET_CORS_ORIGINS = Array.from(
+  new Set([...CORS_ORIGIN, ...SOCKET_ORIGIN, ...DEV_ORIGINS])
+);
 
 // Track MongoDB connection status for startup logging
 let mongoStatus = "disconnected";
@@ -45,7 +57,7 @@ let socketReady = false;
 // Initialize Socket.io
 const io = new Server(server, {
   cors: {
-    origin: CORS_ORIGIN,
+    origin: SOCKET_CORS_ORIGINS,
     credentials: true,
   },
 });

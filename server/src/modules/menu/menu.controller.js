@@ -166,7 +166,7 @@ export const updateItemAvailability = asyncHandler(async (req, res, next) => {
   // Multi-tenant check
   if (
     req.user.role !== "super_admin" &&
-    item.propertyId.toString() !== req.user.propertyId.toString()
+    item.propertyId.toString() !== req.user.propertyId?.toString()
   ) {
     return res.status(403).json({ success: false, error: "Not authorized" });
   }
@@ -203,7 +203,7 @@ export const updateItem = asyncHandler(async (req, res, next) => {
   // Multi-tenant check
   if (
     req.user.role !== "super_admin" &&
-    item.propertyId.toString() !== req.user.propertyId.toString()
+    item.propertyId.toString() !== req.user.propertyId?.toString()
   ) {
     return res.status(403).json({ success: false, error: "Not authorized" });
   }
@@ -259,7 +259,7 @@ export const deleteItem = asyncHandler(async (req, res, next) => {
   // Multi-tenant check
   if (
     req.user.role !== "super_admin" &&
-    item.propertyId.toString() !== req.user.propertyId.toString()
+    item.propertyId.toString() !== req.user.propertyId?.toString()
   ) {
     return res.status(403).json({ success: false, error: "Not authorized" });
   }
@@ -302,7 +302,7 @@ export const deleteCategory = asyncHandler(async (req, res, next) => {
   // Multi-tenant check
   if (
     req.user.role !== "super_admin" &&
-    category.propertyId.toString() !== req.user.propertyId.toString()
+    category.propertyId.toString() !== req.user.propertyId?.toString()
   ) {
     return res.status(403).json({ success: false, error: "Not authorized" });
   }
