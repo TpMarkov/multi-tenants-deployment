@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAdminStore } from "@/store/useAdminStore";
-import { loginAdmin } from "@/lib/api";
+import { loginAdmin, API_BASE_URL } from "@/lib/api";
 import { connectSocket } from "@/lib/socket";
 import { UtensilsCrossed, Eye, EyeOff, ChevronRight } from "lucide-react";
 import toast from "react-hot-toast";
@@ -16,7 +16,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [dbStatus, setDbStatus] = useState("checking"); // checking | connected | disconnected | unreachable
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+  const apiUrl = API_BASE_URL;
 
   useEffect(() => {
     let active = true;
@@ -39,7 +39,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       console.log("[LOGIN] Attempting login with email:", email);
-      console.log("[LOGIN] API baseURL:", process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1 (default)");
+      console.log("[LOGIN] API baseURL:", API_BASE_URL);
       const res = await loginAdmin({ email, password });
       console.log("[LOGIN] Success response:", res.status, res.data);
       const { user, token } = res.data;
@@ -244,9 +244,9 @@ export default function LoginPage() {
             <p className="text-xs text-[#999] text-center font-medium">
               Demo Credentials: <br className="sm:hidden" />
               <span className="text-[#333] font-bold">
-                admin@hotel.com
+                superadmin@hospitalityos.com
               </span> /{" "}
-              <span className="text-[#333] font-bold">password123</span>
+              <span className="text-[#333] font-bold">TestAdmin2026!</span>
             </p>
           </div>
         </div>

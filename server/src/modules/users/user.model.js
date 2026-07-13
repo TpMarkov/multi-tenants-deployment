@@ -49,45 +49,50 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Hash password before saving
-userSchema.pre('save', async function () {
-  if (!this.isModified('password')) {
-    // Set default permissions based on role if new or role changed
-    if (this.isNew || this.isModified('role')) {
-      switch (this.role) {
-        case 'super_admin':
-          this.permissions = {
-            canViewAll: true,
-            canManageRooms: true,
-            canManageMenu: true,
-            canToggleMenuAvailability: true,
-            noSettings: false,
-          };
-          break;
-        case 'property_admin':
-          this.permissions = {
-            canViewAll: true,
-            canManageRooms: false,
-            canManageMenu: false,
-            canToggleMenuAvailability: true,
-            noSettings: false,
-          };
-          break;
-        case 'staff':
-          this.permissions = {
-            canViewAll: true,
-            canManageRooms: false,
-            canManageMenu: false,
-            canToggleMenuAvailability: true,
-            noSettings: true,
-          };
-          break;
-      }
-    }
-    return;
+const applyRolePermissions = function () {
+  switch (this.role) {
+    case 'super_admin':
+      this.permissions = {
+        canViewAll: true,
+        canManageRooms: true,
+        canManageMenu: true,
+        canToggleMenuAvailability: true,
+        noSettings: false,
+      };
+      break;
+    case 'property_admin':
+      this.permissions = {
+        canViewAll: true,
+        canManageRooms: false,
+        canManageMenu: false,
+        canToggleMenuAvailability: true,
+        noSettings: false,
+      };
+      break;
+    case 'staff':
+      this.permissions = {
+        canViewAll: true,
+        canManageRooms: false,
+        canManageMenu: false,
+        canToggleMenuAvailability: true,
+        noSettings: true,
+      };
+      break;
   }
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
+};
+
+// Hash password and set default role permissions before saving
+userSchema.pre('save', async function () {
+  // Set default permissions based on role if new or role changed
+  if (this.isNew || this.isModified('role')) {
+    applyRolePermissions.call(this);
+  }
+
+  // Hash the password only when it has been set/changed
+  if (this.isModified('password')) {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+  }
 });
 
 // Match user entered password to hashed password in database

@@ -1,15 +1,26 @@
 import axios from "axios";
 import { useAdminStore } from "@/store/useAdminStore";
 
+// Normalize the API base URL so it ALWAYS ends with /api/v1, regardless of
+// how NEXT_PUBLIC_API_URL is configured (with or without the prefix). The
+// backend mounts every route under /api/v1, so a missing prefix causes 404s.
+const resolveApiBase = () => {
+  const raw = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+  const base = raw.replace(/\/api\/v1\/?$/, "").replace(/\/+$/, "");
+  return `${base}/api/v1`;
+};
+
+export const API_BASE_URL = resolveApiBase();
+
 // Guest API (no auth)
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1",
+  baseURL: API_BASE_URL,
   headers: { "Content-Type": "application/json" },
 });
 
 // Admin API (with auth token injected)
 export const adminApi = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1",
+  baseURL: API_BASE_URL,
   headers: { "Content-Type": "application/json" },
 });
 
