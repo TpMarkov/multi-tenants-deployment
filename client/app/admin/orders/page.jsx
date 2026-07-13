@@ -200,7 +200,6 @@ function OrderModal({ order, onClose }) {
 export default function OrdersPage() {
   const { propertyId, token, user } = useAdminStore();
   const markAsReadByOrderId = useNotificationStore((s) => s.markAsReadByOrderId);
-  const markAsReadByOrderId = useNotificationStore((s) => s.markAsReadByOrderId);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
