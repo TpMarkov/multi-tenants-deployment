@@ -86,14 +86,6 @@ export default function SettingsPage() {
       return;
     }
 
-    if (
-      (newMember.role === "property_admin" || newMember.role === "staff") &&
-      !newMember.propertyId
-    ) {
-      toast.error("Please select a property");
-      return;
-    }
-
     const payload = {
       name: newMember.name,
       email: newMember.email,
@@ -847,31 +839,7 @@ export default function SettingsPage() {
                       )}
                     </select>
                   </div>
-                  {(newMember.role === "property_admin" ||
-                    newMember.role === "staff") && (
-                    <div>
-                      <label className="block text-sm font-medium text-[#344054] mb-2">
-                        Property
-                      </label>
-                      <select
-                        value={newMember.propertyId}
-                        onChange={(e) =>
-                          setNewMember({
-                            ...newMember,
-                            propertyId: e.target.value,
-                          })
-                        }
-                        className="w-full px-4 py-2.5 border border-[#d0d5dd] rounded-lg text-sm focus:ring-4 focus:ring-[#f4ebff] focus:border-[#7f56d9] outline-none transition-all"
-                      >
-                        <option value="">Select a property</option>
-                        {properties.map((prop) => (
-                          <option key={prop._id} value={prop._id}>
-                            {prop.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
+                  </div>
                 </div>
                 <div className="flex justify-end gap-3 mt-6">
                   <button
@@ -959,31 +927,7 @@ export default function SettingsPage() {
                       )}
                     </select>
                   </div>
-                  {(editingMember.role === "property_admin" ||
-                    editingMember.role === "staff") && (
-                    <div>
-                      <label className="block text-sm font-medium text-[#344054] mb-2">
-                        Property
-                      </label>
-                      <select
-                        value={editingMember.propertyId || ""}
-                        onChange={(e) =>
-                          setEditingMember({
-                            ...editingMember,
-                            propertyId: e.target.value,
-                          })
-                        }
-                        className="w-full px-4 py-2.5 border border-[#d0d5dd] rounded-lg text-sm focus:ring-4 focus:ring-[#f4ebff] focus:border-[#7f56d9] outline-none transition-all"
-                      >
-                        <option value="">Select a property</option>
-                        {properties.map((prop) => (
-                          <option key={prop._id} value={prop._id}>
-                            {prop.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
+                  </div>
                 </div>
                 <div className="flex justify-end gap-3 mt-6">
                   <button
