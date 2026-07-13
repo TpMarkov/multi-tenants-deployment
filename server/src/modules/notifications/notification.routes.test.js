@@ -111,6 +111,42 @@ describe('Order notifications', () => {
   });
 });
 
+describe('Integration: customer order -> admin real-time notification', () => {
+  test('a customer-placed order is persisted, emitted, and visible to the admin', async () => {
+    // 1. Customer (no auth) places a new order.
+    const orderRes = await createOrderRequest();
+    expect(orderRes.status).toBe(201);
+
+    // 2. Backend emitted the real-time "new_order" event.
+    expect(emitCalls.some((c) => c.event === 'new_order')).toBe(true);
+
+    // 3. Admin fetches notifications and sees the unread order immediately.
+    const notifRes = await request(app)
+      .get('/api/v1/notifications')
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(notifRes.status).toBe(200);
+    expect(notifRes.body.unreadCount).toBeGreaterThanOrEqual(1);
+    const hasNewOrder = notifRes.body.data.some(
+      (n) => n.type === 'new_order' && String(n.orderId) === orderRes.body.data._id
+    );
+    expect(hasNewOrder).toBe(true);
+
+    // 4. After the admin reviews (marks read) the badge count drops to 0.
+    const notifId = notifRes.body.data.find(
+      (n) => String(n.orderId) === orderRes.body.data._id
+    )._id;
+    await request(app)
+      .patch(`/api/v1/notifications/${notifId}/read`)
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    const after = await request(app)
+      .get('/api/v1/notifications')
+      .set('Authorization', `Bearer ${adminToken}`);
+    expect(after.body.unreadCount).toBe(0);
+  });
+});
+
 describe('Notification endpoints auth', () => {
   test('Unauthenticated request is rejected with 401', async () => {
     const res = await request(app).get('/api/v1/notifications');

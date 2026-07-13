@@ -94,11 +94,12 @@ export default function TopBar({ title }) {
             <Bell className="h-5 w-5" aria-hidden="true" />
             {unreadCount > 0 && (
               <span
-                className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-red-500 rounded-full text-[10px] leading-[18px] flex items-center justify-center font-bold ring-2 ring-[#1e88e5]"
+                key={unreadCount}
+                className="bell-badge-pop absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-red-500 rounded-full text-[10px] leading-[18px] flex items-center justify-center font-bold text-white ring-2 ring-[#1e88e5]"
                 aria-hidden="true"
                 data-testid="notification-badge"
               >
-                {unreadCount > 9 ? "9+" : unreadCount}
+                {unreadCount > 99 ? "99+" : unreadCount}
               </span>
             )}
           </button>
