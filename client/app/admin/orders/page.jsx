@@ -2,6 +2,7 @@
 import { useEffect, useState, useCallback } from "react";
 import TopBar from "@/components/layout/TopBar";
 import { useAdminStore } from "@/store/useAdminStore";
+import { useNotificationStore } from "@/store/useNotificationStore";
 import { getOrders, updateOrderStatus } from "@/lib/api";
 import { connectSocket, getSocket } from "@/lib/socket";
 import {
@@ -198,6 +199,8 @@ function OrderModal({ order, onClose }) {
 
 export default function OrdersPage() {
   const { propertyId, token, user } = useAdminStore();
+  const markAsReadByOrderId = useNotificationStore((s) => s.markAsReadByOrderId);
+  const markAsReadByOrderId = useNotificationStore((s) => s.markAsReadByOrderId);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -243,7 +246,7 @@ export default function OrdersPage() {
 
     console.log("📡 [Admin Orders] Socket connected for real-time updates");
 
-    socket.on("new_order", (order) => {
+    const handleNewOrder = (order) => {
       console.log("📦 [Admin Orders] New order received:", order);
       setOrders((prev) => [order, ...prev]);
       setCurrentPage(1); // Reset to first page to see new order
@@ -252,9 +255,9 @@ export default function OrdersPage() {
       toast.success(
         `🔔 New order from Room #${order.roomId?.roomNumber || order.roomId}!`,
       );
-    });
+    };
 
-    socket.on("order_updated", ({ orderId, status }) => {
+    const handleOrderUpdated = ({ orderId, status }) => {
       console.log(
         "🔄 [Admin Orders] Order updated:",
         orderId,
@@ -264,14 +267,25 @@ export default function OrdersPage() {
       setOrders((prev) =>
         prev.map((o) => (o._id === orderId ? { ...o, status } : o)),
       );
-    });
+    };
+
+    socket.on("new_order", handleNewOrder);
+    socket.on("order_updated", handleOrderUpdated);
 
     return () => {
       console.log("📡 [Admin Orders] Socket listeners cleanup");
-      socket.off("new_order");
-      socket.off("order_updated");
+      socket.off("new_order", handleNewOrder);
+      socket.off("order_updated", handleOrderUpdated);
     };
   }, [token]);
+
+  // When an admin opens an order's detail view, mark its notification as
+  // reviewed so the bell updates (requirement: reviewed once by an admin).
+  useEffect(() => {
+    if (selectedOrder?._id) {
+      markAsReadByOrderId(selectedOrder._id);
+    }
+  }, [selectedOrder, markAsReadByOrderId]);
 
   const handleStatusUpdate = (orderId, newStatus) => {
     setOrders((prev) =>

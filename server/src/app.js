@@ -108,6 +108,7 @@ import roomRoutes from "./modules/rooms/room.routes.js";
 import menuRoutes from "./modules/menu/menu.routes.js";
 import orderRoutes from "./modules/orders/order.routes.js";
 import feedbackRoutes from "./modules/feedback/feedback.routes.js";
+import notificationRoutes from "./modules/notifications/notification.routes.js";
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", userRoutes);
@@ -116,6 +117,7 @@ app.use("/api/v1/rooms", roomRoutes);
 app.use("/api/v1/menu", menuRoutes);
 app.use("/api/v1/orders", orderRoutes);
 app.use("/api/v1/feedback", feedbackRoutes);
+app.use("/api/v1/notifications", notificationRoutes);
 
 // Render health check endpoint
 app.get("/health", async (req, res) => {

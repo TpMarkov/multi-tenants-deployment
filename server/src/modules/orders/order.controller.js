@@ -4,6 +4,8 @@ import Order from "./order.model.js";
 import MenuItem from "../menu/item.model.js";
 import Room from "../rooms/room.model.js";
 import { logAudit } from "../../utils/auditLogger.js";
+import { createOrderNotification } from "../notifications/notification.service.js";
+import { markOrderNotificationsRead } from "../notifications/notification.service.js";
 
 // @desc    Create order (Public)
 // @route   POST /api/v1/orders
@@ -125,12 +127,23 @@ export const createOrder = asyncHandler(async (req, res, next) => {
 
   console.log('✅ [Create Order] Order created:', order._id);
 
+  // Populate the room so we can build a meaningful notification + payload.
+  const populatedOrder = await Order.findById(order._id).populate(
+    "roomId",
+    "roomNumber",
+  );
+
+  // Persist a notification (source of truth for the bell badge). This runs
+  // independently of the real-time emit so the bell stays correct even if a
+  // connected client misses the socket event.
+  try {
+    await createOrderNotification(populatedOrder);
+  } catch (err) {
+    console.error('❌ [Create Order] Failed to persist notification:', err);
+  }
+
   const io = req.app.locals.io;
   if (io) {
-    const populatedOrder = await Order.findById(order._id).populate(
-      "roomId",
-      "roomNumber",
-    );
     console.log('📡 [Create Order] Emitting new_order event');
     io.emit("new_order", populatedOrder);
   }
@@ -236,9 +249,18 @@ export const updateOrderStatus = asyncHandler(async (req, res, next) => {
     status,
   });
 
+  // When an admin reviews/updates an order, clear its notification so the
+  // bell reflects that it has been handled.
+  try {
+    await markOrderNotificationsRead(order._id);
+  } catch (err) {
+    console.error('❌ [Update Order] Failed to mark notification read:', err);
+  }
+
   const io = req.app.locals.io;
   if (io) {
     io.emit("order_updated", { orderId: order._id, status });
+    io.emit("notification:updated", { orderId: order._id, status });
   }
 
   res.status(200).json({

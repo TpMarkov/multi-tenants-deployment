@@ -32,3 +32,30 @@ export const authorize = (...roles) => {
     next();
   };
 };
+
+// Strict authentication guard: rejects requests that are missing or carry an
+// invalid bearer token. Use this for endpoints that must never be reachable by
+// anonymous clients (e.g. admin notifications).
+export const requireAuth = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res
+      .status(401)
+      .json({ success: false, error: 'Not authorized, no token provided' });
+  }
+
+  try {
+    const decoded = verifyToken(authHeader.split(' ')[1]);
+    req.user = {
+      id: decoded.id,
+      role: decoded.role,
+      propertyId: decoded.propertyId,
+    };
+    next();
+  } catch {
+    return res
+      .status(401)
+      .json({ success: false, error: 'Not authorized, token failed' });
+  }
+};

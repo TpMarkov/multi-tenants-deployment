@@ -110,4 +110,10 @@ export const submitFeedback = (data) => api.post('/feedback', data);
 export const getFeedback = (propertyId) => adminApi.get(`/feedback${propertyId ? `?propertyId=${propertyId}` : ''}`);
 export const getFeedbackStats = (propertyId) => adminApi.get(`/feedback/stats${propertyId ? `?propertyId=${propertyId}` : ''}`);
 
+// --- Admin Notifications ---
+export const getNotifications = () => adminApi.get('/notifications');
+export const getUnreadNotificationCount = () => adminApi.get('/notifications/unread-count');
+export const markNotificationRead = (id) => adminApi.patch(`/notifications/${id}/read`);
+export const markAllNotificationsRead = () => adminApi.post('/notifications/read-all');
+
 export default api;
